@@ -1,6 +1,7 @@
 package http
 
 import (
+	"TechnoParkDBProject/internal/app/middlware"
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/app/user/models"
 	"encoding/json"
@@ -21,7 +22,8 @@ func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Useacse) *Us
 		userUsecase: userUsecase,
 	}
 
-	userHandler.router.POST("/user/:nickname/create", userHandler.CreateUserHandler)
+	userHandler.router.POST("/user/:nickname/create",
+		middlware.ContentTypeJson(userHandler.CreateUserHandler))
 
 	return userHandler
 }
