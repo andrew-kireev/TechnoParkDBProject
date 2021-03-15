@@ -15,12 +15,17 @@ func NewUserUsecase(userRep user.Repository) *UserUsecase {
 	}
 }
 
-func (UserUse *UserUsecase) CreateUser(user *models.User) error {
-	err := UserUse.userRep.CreateUser(user)
+func (userUse *UserUsecase) CreateUser(user *models.User) error {
+	err := userUse.userRep.CreateUser(user)
 	return err
 }
 
-func (UserUse *UserUsecase) GetUserByEmailOrNickname(nickname, email string) (*models.User, error) {
-	user, err := UserUse.userRep.GetUserByEmailOrNickname(nickname, email)
+func (userUse *UserUsecase) GetUserByEmailOrNickname(nickname, email string) (*models.User, error) {
+	user, err := userUse.userRep.GetUserByEmailOrNickname(nickname, email)
+	return user, err
+}
+
+func (userUse *UserUsecase) GetUserByNickname(nickname string) (*models.User, error) {
+	user, err := userUse.userRep.GetUserByNickname(nickname)
 	return user, err
 }

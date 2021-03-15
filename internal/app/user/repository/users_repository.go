@@ -39,3 +39,17 @@ func (userRep *UserRepository) GetUserByEmailOrNickname(nickname, email string) 
 	}
 	return user, nil
 }
+
+func (userRep *UserRepository) GetUserByNickname(nickname string) (*models.User, error) {
+	query := `SELECT nickname, fullname, about, email from users
+			where nickname = $1`
+	user := &models.User{}
+
+	err := userRep.Conn.QueryRow(context.Background(), query,
+		nickname).Scan(&user.Nickname, &user.FullName, &user.About, &user.Email)
+
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
