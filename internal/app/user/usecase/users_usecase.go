@@ -29,3 +29,13 @@ func (userUse *UserUsecase) GetUserByNickname(nickname string) (*models.User, er
 	user, err := userUse.userRep.GetUserByNickname(nickname)
 	return user, err
 }
+
+func (userUse *UserUsecase) UpdateUserInformation(user *models.User) error {
+	err := userUse.userRep.UpdateUserInformation(user)
+	return err
+}
+
+func (userUse *UserUsecase) GetUserByEmail(email string) (*models.User, error) {
+	user, err := userUse.userRep.GetUserByEmail(email)
+	return user, err
+}

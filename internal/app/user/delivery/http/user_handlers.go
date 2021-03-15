@@ -26,8 +26,8 @@ func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Useacse) *Us
 		middlware.ContentTypeJson(userHandler.CreateUserHandler))
 	userHandler.router.GET("/user/:nickname/profile",
 		middlware.ContentTypeJson(userHandler.GetUserHandler))
-
-
+	userHandler.router.POST("/user/:nickname/profile",
+		middlware.ContentTypeJson(userHandler.UpdateUserHandler))
 	return userHandler
 }
 
@@ -78,6 +78,41 @@ func (handler *UserHandler) GetUserHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	body, err := user.MarshalJSON()
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+	}
+	ctx.SetBody(body)
+}
+
+func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
+	nickname := ctx.UserValue("nickname").(string)
+
+	newUser := &models.User{}
+	err := json.Unmarshal(ctx.PostBody(), newUser)
+	if err != nil {
+		fmt.Println(err)
+	}
+	newUser.Nickname = nickname
+
+	us, err := handler.userUsecase.GetUserByEmail(newUser.Email)
+	if err == nil && us.Nickname != newUser.Nickname {
+		body := fmt.Sprintf("{\n\"message\": \"Can't find user with nickname %v\n}", nickname)
+		ctx.SetBody([]byte(body))
+		ctx.SetStatusCode(http.StatusConflict)
+		return
+	}
+
+	err = handler.userUsecase.UpdateUserInformation(newUser)
+
+	if err != nil {
+		body := fmt.Sprintf("{\n\"message\": \"Can't find user with nickname %v\n}", nickname)
+		ctx.SetBody([]byte(body))
+		ctx.SetStatusCode(http.StatusNotFound)
+		return
+	}
+
+	body, err := newUser.MarshalJSON()
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
