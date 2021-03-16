@@ -105,6 +105,7 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		fmt.Println(err)
 	}
 	newUser.Nickname = nickname
+	fmt.Println(newUser)
 
 	us, err := handler.userUsecase.GetUserByEmail(newUser.Email)
 	if err == nil && us.Nickname != newUser.Nickname {
@@ -120,8 +121,7 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusConflict)
 		return
 	}
-	err = handler.userUsecase.UpdateUserInformation(newUser)
-
+	oldUser, err := handler.userUsecase.GetUserByNickname(nickname)
 	if err != nil {
 		resp := &responses.Response{
 			Message: "Can't find user with nickname" + nickname,
@@ -134,6 +134,18 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetBody(body)
 		ctx.SetStatusCode(http.StatusNotFound)
 		return
+	}
+
+	err = handler.userUsecase.UpdateUserInformation(newUser)
+
+	if newUser.FullName == "" {
+		newUser.FullName = oldUser.FullName
+	}
+	if newUser.About == "" {
+		newUser.About = oldUser.About
+	}
+	if newUser.Email == "" {
+		newUser.Email = oldUser.Email
 	}
 
 	body, err := newUser.MarshalJSON()

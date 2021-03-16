@@ -65,10 +65,18 @@ func (userRep *UserRepository) GetUserByNickname(nickname string) (*models.User,
 }
 
 func (userRep *UserRepository) UpdateUserInformation(user *models.User) error {
-	query := `UPDATE users SET fullname = COALESCE(NULLIF($1, ''), fullname),
-			about = COALESCE(NULLIF($2, ''), about),
-			email = COALESCE(NULLIF($3, ''), email)
-			where nickname = $4`
+	query := `UPDATE users
+SET fullname = (CASE
+                    WHEN LTRIM($1) = '' THEN fullname
+                    ELSE $1 END)
+  , about=(CASE
+               WHEN $2 = '' THEN about
+               ELSE $2 END)
+  , email= (CASE
+                    WHEN LTRIM($3) = '' THEN email
+                    ELSE LTRIM($3)
+    END)
+where nickname = $4`
 
 	res, err := userRep.Conn.Exec(context.Background(), query, user.FullName,
 		user.About, user.Email, user.Nickname)

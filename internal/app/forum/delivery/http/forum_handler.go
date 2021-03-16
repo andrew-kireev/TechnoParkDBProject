@@ -4,6 +4,7 @@ import (
 	"TechnoParkDBProject/internal/app/forum"
 	"TechnoParkDBProject/internal/app/forum/models"
 	"TechnoParkDBProject/internal/app/middlware"
+	"TechnoParkDBProject/internal/pkg/responses"
 	"encoding/json"
 	"fmt"
 	"github.com/buaazp/fasthttprouter"
@@ -41,10 +42,16 @@ func (handler *ForumHandler) CreateForumHandler(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		alredyExictedForum, err := handler.forumUsecase.GetForumBySlug(newForum.Slug)
 		if err != nil {
+			resp := &responses.Response{
+				Message: "Can't find user with nickname" + newForum.UserNickname,
+			}
+			body, err := resp.MarshalJSON()
+			if err != nil {
+				ctx.SetStatusCode(http.StatusInternalServerError)
+				return
+			}
+			ctx.SetBody(body)
 			ctx.SetStatusCode(http.StatusNotFound)
-			body := fmt.Sprintf("{\n\"message\": \"Can't find user with nickname %v\n}",
-				newForum.UserNickname)
-			ctx.SetBody([]byte(body))
 			return
 		}
 		fmt.Println(err)
