@@ -65,7 +65,9 @@ func (userRep *UserRepository) GetUserByNickname(nickname string) (*models.User,
 }
 
 func (userRep *UserRepository) UpdateUserInformation(user *models.User) error {
-	query := `UPDATE users SET fullname = $1, about = $2, email = $3
+	query := `UPDATE users SET fullname = COALESCE(NULLIF($1, ''), fullname),
+			about = COALESCE(NULLIF($2, ''), about),
+			email = COALESCE(NULLIF($3, ''), email)
 			where nickname = $4`
 
 	res, err := userRep.Conn.Exec(context.Background(), query, user.FullName,
@@ -90,4 +92,16 @@ func (userRep *UserRepository) GetUserByEmail(email string) (*models.User, error
 		return nil, err
 	}
 	return user, nil
+}
+
+func (userRep *UserRepository) DeleteAll() error {
+	query := `DELETE FROM forum;
+			DELETE FROM users;`
+
+	_, err := userRep.Conn.Exec(context.Background(), query)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
 }

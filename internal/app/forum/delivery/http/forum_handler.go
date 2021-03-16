@@ -23,7 +23,7 @@ func NewForumHandler(router *fasthttprouter.Router, forumUsecase forum.Usecase) 
 	}
 
 	forumHandler.router.POST("/api/forum/create",
-		middlware.ContentTypeJson(forumHandler.CreateForumHandler))
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.CreateForumHandler)))
 
 	return forumHandler
 }

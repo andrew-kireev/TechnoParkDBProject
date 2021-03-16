@@ -8,4 +8,5 @@ type Repository interface {
 	GetUserByNickname(nickname string) (*models.User, error)
 	UpdateUserInformation(user *models.User) error
 	GetUserByEmail(email string) (*models.User, error)
+	DeleteAll() error
 }

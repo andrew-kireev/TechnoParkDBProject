@@ -39,3 +39,8 @@ func (userUse *UserUsecase) GetUserByEmail(email string) (*models.User, error) {
 	user, err := userUse.userRep.GetUserByEmail(email)
 	return user, err
 }
+
+func (userUse *UserUsecase) DeleteAll() error {
+	err := userUse.userRep.DeleteAll()
+	return err
+}

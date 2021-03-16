@@ -4,6 +4,7 @@ import (
 	"TechnoParkDBProject/internal/app/middlware"
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/app/user/models"
+	"TechnoParkDBProject/internal/pkg/responses"
 	"encoding/json"
 	"fmt"
 	"github.com/buaazp/fasthttprouter"
@@ -23,11 +24,13 @@ func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Usecase) *Us
 	}
 
 	userHandler.router.POST("/api/user/:nickname/create",
-		middlware.ContentTypeJson(userHandler.CreateUserHandler))
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.CreateUserHandler)))
 	userHandler.router.GET("/api/user/:nickname/profile",
-		middlware.ContentTypeJson(userHandler.GetUserHandler))
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.GetUserHandler)))
 	userHandler.router.POST("/api/user/:nickname/profile",
-		middlware.ContentTypeJson(userHandler.UpdateUserHandler))
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.UpdateUserHandler)))
+	userHandler.router.POST("/api/service/clear",
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.DeleteAllHandler)))
 	return userHandler
 }
 
@@ -72,8 +75,15 @@ func (handler *UserHandler) GetUserHandler(ctx *fasthttp.RequestCtx) {
 
 	user, err := handler.userUsecase.GetUserByNickname(nickname)
 	if err != nil {
-		body := fmt.Sprintf("{\"message\": \"Can't find user with nickname %v}", nickname)
-		ctx.SetBody([]byte(body))
+		resp := &responses.Response{
+			Message: "Can't find user with nickname" + nickname,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
 		ctx.SetStatusCode(http.StatusNotFound)
 		return
 	}
@@ -98,17 +108,30 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 
 	us, err := handler.userUsecase.GetUserByEmail(newUser.Email)
 	if err == nil && us.Nickname != newUser.Nickname {
-		body := fmt.Sprintf("{\n\"message\": \"Can't find user with nickname %v\n}", nickname)
-		ctx.SetBody([]byte(body))
+		resp := &responses.Response{
+			Message: "Can't find user with nickname" + nickname,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
 		ctx.SetStatusCode(http.StatusConflict)
 		return
 	}
-
 	err = handler.userUsecase.UpdateUserInformation(newUser)
 
 	if err != nil {
-		body := fmt.Sprintf("{\n\"message\": \"Can't find user with nickname %v\n}", nickname)
-		ctx.SetBody([]byte(body))
+		resp := &responses.Response{
+			Message: "Can't find user with nickname" + nickname,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
 		ctx.SetStatusCode(http.StatusNotFound)
 		return
 	}
@@ -119,4 +142,13 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 	}
 	ctx.SetBody(body)
+}
+
+func (handler *UserHandler) DeleteAllHandler(ctx *fasthttp.RequestCtx) {
+	err := handler.userUsecase.DeleteAll()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	ctx.SetStatusCode(http.StatusOK)
 }

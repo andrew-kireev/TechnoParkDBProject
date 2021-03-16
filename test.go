@@ -1,8 +1,7 @@
 package main
 
 import (
-	"TechnoParkDBProject/internal/app/forum/models"
-	"TechnoParkDBProject/internal/app/forum/repository"
+	"TechnoParkDBProject/internal/app/user/repository"
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -20,14 +19,7 @@ func main() {
 	defer dbpool.Close()
 
 	forumRep := repository.NewUserRepository(dbpool)
-	forum := &models.Forum{
-		Tittle:       "title",
-		UserNickname: "andrew",
-		Slug:         "http://some_url.com",
-		Posts:        101,
-		Threads:      5,
-	}
 
-	err = forumRep.CreateForum(forum)
+	err = forumRep.DeleteAll()
 	fmt.Println(err)
 }
