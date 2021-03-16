@@ -7,9 +7,3 @@ type User struct {
 	About    string `json:"about"`
 	Email    string `json:"email"`
 }
-
-
-func test() {
-	us := &User{}
-	us.MarshalJSON()
-}

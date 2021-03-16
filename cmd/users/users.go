@@ -1,6 +1,9 @@
 package main
 
 import (
+	forumHTTP "TechnoParkDBProject/internal/app/forum/delivery/http"
+	forumRepositoru "TechnoParkDBProject/internal/app/forum/repository"
+	forumUsecase "TechnoParkDBProject/internal/app/forum/usecase"
 	userHTTP "TechnoParkDBProject/internal/app/user/delivery/http"
 	"TechnoParkDBProject/internal/app/user/repository"
 	"TechnoParkDBProject/internal/app/user/usecase"
@@ -27,12 +30,14 @@ func main() {
 	defer dbpool.Close()
 
 	userRep := repository.NewUserRepository(dbpool)
+	forumRep := forumRepositoru.NewUserRepository(dbpool)
+
 	userUsecase := usecase.NewUserUsecase(userRep)
+	forumUsec := forumUsecase.NewForumUsecase(forumRep)
 
 	userHTTP.NewUserHandler(router, userUsecase)
+	forumHTTP.NewForumHandler(router, forumUsec)
 
-	//serv := server.NewServer(router, userHandler)
-
-	err = fasthttp.ListenAndServe(":7777", router.Handler)
+	err = fasthttp.ListenAndServe(":5000", router.Handler)
 	fmt.Println(err)
 }

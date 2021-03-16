@@ -20,9 +20,9 @@ func (userUse *UserUsecase) CreateUser(user *models.User) error {
 	return err
 }
 
-func (userUse *UserUsecase) GetUserByEmailOrNickname(nickname, email string) (*models.User, error) {
-	user, err := userUse.userRep.GetUserByEmailOrNickname(nickname, email)
-	return user, err
+func (userUse *UserUsecase) GetUserByEmailOrNickname(nickname, email string) ([]*models.User, error) {
+	users, err := userUse.userRep.GetUserByEmailOrNickname(nickname, email)
+	return users, err
 }
 
 func (userUse *UserUsecase) GetUserByNickname(nickname string) (*models.User, error) {

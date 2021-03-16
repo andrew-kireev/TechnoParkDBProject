@@ -27,18 +27,27 @@ func (userRep *UserRepository) CreateUser(user *models.User) error {
 	return err
 }
 
-func (userRep *UserRepository) GetUserByEmailOrNickname(nickname, email string) (*models.User, error) {
+func (userRep *UserRepository) GetUserByEmailOrNickname(nickname, email string) ([]*models.User, error) {
 	query := `SELECT nickname, fullname, about, email from users
 			where nickname = $1 or email = $2`
-	user := &models.User{}
+	//user := &models.User{}
+	users := make([]*models.User, 0)
 
-	err := userRep.Conn.QueryRow(context.Background(), query,
-		nickname, email).Scan(&user.Nickname, &user.FullName, &user.About, &user.Email)
-
+	rows, err := userRep.Conn.Query(context.Background(), query,
+		nickname, email)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	defer rows.Close()
+
+	for rows.Next() {
+		user := &models.User{}
+		_ = rows.Scan(&user.Nickname, &user.FullName, &user.About,
+			&user.Email)
+
+		users = append(users, user)
+	}
+	return users, nil
 }
 
 func (userRep *UserRepository) GetUserByNickname(nickname string) (*models.User, error) {
