@@ -9,7 +9,7 @@ import (
 	"TechnoParkDBProject/internal/app/user/usecase"
 	"context"
 	"fmt"
-	"github.com/buaazp/fasthttprouter"
+	"github.com/fasthttp/router"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/valyala/fasthttp"
 	"os"
@@ -18,7 +18,7 @@ import (
 func main() {
 	//config := configs.NewConfig()
 
-	router := fasthttprouter.New()
+	router := router.New()
 
 	dbpool, err := pgxpool.Connect(context.Background(),
 		"host=localhost port=5432 dbname=db_project sslmode=disable",
@@ -36,7 +36,7 @@ func main() {
 	forumUsec := forumUsecase.NewForumUsecase(forumRep)
 
 	userHTTP.NewUserHandler(router, userUsecase)
-	forumHTTP.NewForumHandler(router, forumUsec)
+	forumHTTP.NewForumHandler(router, forumUsec, userUsecase)
 
 	err = fasthttp.ListenAndServe(":5000", router.Handler)
 	fmt.Println(err)

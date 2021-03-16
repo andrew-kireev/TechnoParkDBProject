@@ -7,27 +7,27 @@ import (
 	"TechnoParkDBProject/internal/pkg/responses"
 	"encoding/json"
 	"fmt"
-	"github.com/buaazp/fasthttprouter"
+	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
 	"net/http"
 )
 
 type UserHandler struct {
-	router      *fasthttprouter.Router
+	router      *router.Router
 	userUsecase user.Usecase
 }
 
-func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Usecase) *UserHandler {
+func NewUserHandler(router *router.Router, userUsecase user.Usecase) *UserHandler {
 	userHandler := &UserHandler{
 		router:      router,
 		userUsecase: userUsecase,
 	}
 
-	userHandler.router.POST("/api/user/:nickname/create",
+	userHandler.router.POST("/api/user/{nickname}/create",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.CreateUserHandler)))
-	userHandler.router.GET("/api/user/:nickname/profile",
+	userHandler.router.GET("/api/user/{nickname}/profile",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.GetUserHandler)))
-	userHandler.router.POST("/api/user/:nickname/profile",
+	userHandler.router.POST("/api/user/{nickname}/profile",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.UpdateUserHandler)))
 	userHandler.router.POST("/api/service/clear",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.DeleteAllHandler)))

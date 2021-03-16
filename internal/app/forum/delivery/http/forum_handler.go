@@ -4,27 +4,32 @@ import (
 	"TechnoParkDBProject/internal/app/forum"
 	"TechnoParkDBProject/internal/app/forum/models"
 	"TechnoParkDBProject/internal/app/middlware"
+	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/pkg/responses"
 	"encoding/json"
 	"fmt"
-	"github.com/buaazp/fasthttprouter"
+	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
 	"net/http"
 )
 
 type ForumHandler struct {
-	router       *fasthttprouter.Router
+	router       *router.Router
 	forumUsecase forum.Usecase
+	userUsecase  user.Usecase
 }
 
-func NewForumHandler(router *fasthttprouter.Router, forumUsecase forum.Usecase) *ForumHandler {
+func NewForumHandler(router *router.Router, forumUsecase forum.Usecase, userUsecase user.Usecase) *ForumHandler {
 	forumHandler := &ForumHandler{
 		router:       router,
 		forumUsecase: forumUsecase,
+		userUsecase:  userUsecase,
 	}
 
 	forumHandler.router.POST("/api/forum/create",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.CreateForumHandler)))
+	forumHandler.router.GET("/api/forum/{forum_slug}/details",
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.GetForumHandler)))
 
 	return forumHandler
 }
@@ -37,6 +42,21 @@ func (handler *ForumHandler) CreateForumHandler(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}
+	user, err := handler.userUsecase.GetUserByNickname(newForum.UserNickname)
+	if err != nil {
+		resp := &responses.Response{
+			Message: "Can't find user with nickname" + newForum.UserNickname,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
+		ctx.SetStatusCode(http.StatusNotFound)
+		return
+	}
+	newForum.UserNickname = user.Nickname
 
 	err = handler.forumUsecase.CreateForum(newForum)
 	if err != nil {
@@ -73,4 +93,29 @@ func (handler *ForumHandler) CreateForumHandler(ctx *fasthttp.RequestCtx) {
 	}
 	ctx.SetStatusCode(http.StatusCreated)
 	ctx.SetBody(body)
+}
+
+func (handler *ForumHandler) GetForumHandler(ctx *fasthttp.RequestCtx) {
+	slug := ctx.UserValue("forum_slug").(string)
+	forum, err := handler.forumUsecase.GetForumBySlug(slug)
+	if err != nil {
+		resp := &responses.Response{
+			Message: "Can't find forum with slug " + slug,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
+		ctx.SetStatusCode(http.StatusNotFound)
+		return
+	}
+	body, err := forum.MarshalJSON()
+	if err != nil {
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	ctx.SetBody(body)
+	ctx.SetStatusCode(http.StatusOK)
 }
