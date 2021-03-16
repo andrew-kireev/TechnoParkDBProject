@@ -13,10 +13,10 @@ import (
 
 type UserHandler struct {
 	router      *fasthttprouter.Router
-	userUsecase user.Useacse
+	userUsecase user.Usecase
 }
 
-func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Useacse) *UserHandler {
+func NewUserHandler(router *fasthttprouter.Router, userUsecase user.Usecase) *UserHandler {
 	userHandler := &UserHandler{
 		router:      router,
 		userUsecase: userUsecase,
