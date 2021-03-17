@@ -51,7 +51,7 @@ func easyjson2d00218DecodeTechnoParkDBProjectInternalAppThreadModels(in *jlexer.
 		case "slug":
 			out.Slug = string(in.String())
 		case "created":
-			out.Created = int(in.Int())
+			out.Created = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -96,7 +96,7 @@ func easyjson2d00218EncodeTechnoParkDBProjectInternalAppThreadModels(out *jwrite
 		out.RawString(prefix)
 		out.Int(int(in.Votes))
 	}
-	{
+	if in.Slug != "" {
 		const prefix string = ",\"slug\":"
 		out.RawString(prefix)
 		out.String(string(in.Slug))
@@ -104,7 +104,7 @@ func easyjson2d00218EncodeTechnoParkDBProjectInternalAppThreadModels(out *jwrite
 	{
 		const prefix string = ",\"created\":"
 		out.RawString(prefix)
-		out.Int(int(in.Created))
+		out.String(string(in.Created))
 	}
 	out.RawByte('}')
 }

@@ -15,7 +15,20 @@ func NewThreadUsecase(threadRep thread.Repository) *ThreadUsecase {
 	}
 }
 
-func (threadUsecase *ThreadUsecase) CreateThread(thread *models.Thread) error {
-	err := threadUsecase.threadRep.CreateThread(thread)
-	return err
+func (threadUsecase *ThreadUsecase) CreateThread(thread *models.Thread) (*models.Thread, error) {
+	thread, err := threadUsecase.threadRep.CreateThread(thread)
+	return thread, err
+}
+
+func (threadUsecase *ThreadUsecase) FindThreadBySlug(slug string) (*models.Thread, error) {
+	thread, err := threadUsecase.threadRep.FindThreadBySlug(slug)
+	return thread, err
+}
+
+func (threadUsecase *ThreadUsecase) GetThreadsByForumSlug(forumSlug, since, desc string, limit int) ([]*models.Thread, error) {
+	threads, err := threadUsecase.threadRep.GetThreadsByForumSlug(forumSlug, since, desc)
+	if len(threads) > limit {
+		threads = threads[:limit]
+	}
+	return threads, err
 }

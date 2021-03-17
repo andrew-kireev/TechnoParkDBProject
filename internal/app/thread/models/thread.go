@@ -7,11 +7,6 @@ type Thread struct {
 	Forum   string `json:"forum"`
 	Message string `json:"message"`
 	Votes   int    `json:"votes"`
-	Slug    string `json:"slug"`
-	Created int    `json:"created"`
-}
-
-func test() {
-	t := &Thread{}
-	t.MarshalJSON()
+	Slug    string `json:"slug,omitempty"`
+	Created string `json:"created"`
 }
