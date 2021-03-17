@@ -72,7 +72,8 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	since := string(ctx.FormValue("since"))
+	since := string(ctx.QueryArgs().Peek("since"))
+	fmt.Println(since)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -84,6 +85,10 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 	threads, err := handler.threadUsecase.GetThreadsByForumSlug(slug, since, desc, limit)
 	if err != nil {
 		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: "Can't threds with forum slug " + slug}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
 		return
 	}
 	if len(threads) == 0 {

@@ -26,9 +26,6 @@ func (threadUsecase *ThreadUsecase) FindThreadBySlug(slug string) (*models.Threa
 }
 
 func (threadUsecase *ThreadUsecase) GetThreadsByForumSlug(forumSlug, since, desc string, limit int) ([]*models.Thread, error) {
-	threads, err := threadUsecase.threadRep.GetThreadsByForumSlug(forumSlug, since, desc)
-	if len(threads) > limit {
-		threads = threads[:limit]
-	}
+	threads, err := threadUsecase.threadRep.GetThreadsByForumSlug(forumSlug, since, desc, limit)
 	return threads, err
 }

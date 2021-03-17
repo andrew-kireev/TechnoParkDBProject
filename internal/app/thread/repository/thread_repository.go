@@ -4,7 +4,10 @@ import (
 	"TechnoParkDBProject/internal/app/thread/models"
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/go-openapi/strfmt"
+	"time"
 )
 
 type ThreadRepository struct {
@@ -18,14 +21,24 @@ func NewThreadRepository(con *pgxpool.Pool) *ThreadRepository {
 }
 
 func (thredRep *ThreadRepository) CreateThread(thread *models.Thread) (*models.Thread, error) {
-	query := `INSERT INTO threads (title, author, forum, message, slug)
+	var err error
+	if thread.Created != "" {
+		query := `INSERT INTO threads (title, author, forum, message, slug, created)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			Returning id, title, author, forum, message, votes, slug`
+
+		err = thredRep.Conn.QueryRow(context.Background(), query, thread.Title, thread.Author,
+			thread.Forum, thread.Message, thread.Slug, thread.Created).Scan(&thread.ID, &thread.Title, &thread.Author,
+			&thread.Forum, &thread.Message, &thread.Votes, &thread.Slug)
+	} else {
+		query := `INSERT INTO threads (title, author, forum, message, slug)
 			VALUES ($1, $2, $3, $4, $5)
 			Returning id, title, author, forum, message, votes, slug`
 
-	err := thredRep.Conn.QueryRow(context.Background(), query, thread.Title, thread.Author,
-		thread.Forum, thread.Message, thread.Slug).Scan(&thread.ID, &thread.Title, &thread.Author,
-		&thread.Forum, &thread.Message, &thread.Votes, &thread.Slug)
-
+		err = thredRep.Conn.QueryRow(context.Background(), query, thread.Title, thread.Author,
+			thread.Forum, thread.Message, thread.Slug).Scan(&thread.ID, &thread.Title, &thread.Author,
+			&thread.Forum, &thread.Message, &thread.Votes, &thread.Slug)
+	}
 	return thread, err
 }
 
@@ -44,12 +57,26 @@ func (thredRep *ThreadRepository) FindThreadBySlug(slug string) (*models.Thread,
 	return thread, nil
 }
 
-func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc string) ([]*models.Thread, error) {
-	query := `SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, created from threads as t
+func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc string, limit int) ([]*models.Thread, error) {
+	query := `SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, t.created from threads as t
     LEFT JOIN forum f on t.forum = f.slug
-	WHERE f.slug = $1 and t.created >= $2`
-
-	rows, err := thredRep.Conn.Query(context.Background(), query, forumSlug, since)
+	WHERE f.slug = $1`
+	if since != "" {
+		query += " and t.created >= $2"
+	}
+ 	if desc == "true" {
+		query += " ORDER BY t.created desc"
+	} else if desc == "false"{
+		query += " ORDER BY t.created asc"
+	}
+	query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
+	var rows pgx.Rows
+	var err error
+	if since != "" {
+		rows, err = thredRep.Conn.Query(context.Background(), query, forumSlug, since)
+	} else {
+		rows, err = thredRep.Conn.Query(context.Background(), query, forumSlug)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -57,10 +84,12 @@ func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc s
 
 	threads := make([]*models.Thread, 0)
 	for rows.Next() {
+		t := &time.Time{}
 		thread := &models.Thread{}
 		err = rows.Scan(&thread.ID, &thread.Title,
 			&thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
-			&thread.Slug, &thread.Created)
+			&thread.Slug, t)
+		thread.Created = strfmt.DateTime(t.UTC()).String()
 		if err != nil {
 			fmt.Println(err)
 		}

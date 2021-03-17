@@ -103,7 +103,8 @@ func (userRep *UserRepository) GetUserByEmail(email string) (*models.User, error
 }
 
 func (userRep *UserRepository) DeleteAll() error {
-	query := `DELETE FROM forum;
+	query := `DELETE FROM threads;
+			DELETE FROM forum;
 			DELETE FROM users;`
 
 	_, err := userRep.Conn.Exec(context.Background(), query)
