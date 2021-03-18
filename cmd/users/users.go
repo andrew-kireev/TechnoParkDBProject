@@ -42,7 +42,7 @@ func main() {
 
 	userHTTP.NewUserHandler(router, userUsecase)
 	forumHTTP.NewForumHandler(router, forumUsec, userUsecase)
-	threadHTTP.NewThreadHandler(router, thredUsec)
+	threadHTTP.NewThreadHandler(router, thredUsec, forumUsec)
 
 	err = fasthttp.ListenAndServe(":5000", router.Handler)
 	fmt.Println(err)

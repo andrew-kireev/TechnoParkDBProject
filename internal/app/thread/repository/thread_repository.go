@@ -4,9 +4,9 @@ import (
 	"TechnoParkDBProject/internal/app/thread/models"
 	"context"
 	"fmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/go-openapi/strfmt"
 	"time"
 )
 
@@ -59,17 +59,24 @@ func (thredRep *ThreadRepository) FindThreadBySlug(slug string) (*models.Thread,
 
 func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc string, limit int) ([]*models.Thread, error) {
 	query := `SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, t.created from threads as t
-    LEFT JOIN forum f on t.forum = f.slug
+  LEFT JOIN forum f on t.forum = f.slug
 	WHERE f.slug = $1`
-	if since != "" {
+	if since != "" && desc == "true" {
+		query += " and t.created <= $2"
+	} else if since != "" && desc == "false" {
+		query += " and t.created >= $2"
+	} else if since != "" {
 		query += " and t.created >= $2"
 	}
- 	if desc == "true" {
+	if desc == "true" {
 		query += " ORDER BY t.created desc"
-	} else if desc == "false"{
+	} else if desc == "false" {
 		query += " ORDER BY t.created asc"
+	} else {
+		query += " ORDER BY t.created"
 	}
 	query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
+	fmt.Println(query)
 	var rows pgx.Rows
 	var err error
 	if since != "" {
@@ -90,9 +97,9 @@ func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc s
 			&thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
 			&thread.Slug, t)
 		thread.Created = strfmt.DateTime(t.UTC()).String()
-		if err != nil {
-			fmt.Println(err)
-		}
+		//if err != nil {
+		//	fmt.Println(err)
+		//}
 		threads = append(threads, thread)
 	}
 	return threads, nil

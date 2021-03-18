@@ -1,6 +1,7 @@
 package http
 
 import (
+	"TechnoParkDBProject/internal/app/forum"
 	"TechnoParkDBProject/internal/app/middlware"
 	"TechnoParkDBProject/internal/app/thread"
 	"TechnoParkDBProject/internal/app/thread/models"
@@ -16,12 +17,15 @@ import (
 type ThreadHandler struct {
 	router        *router.Router
 	threadUsecase thread.Usecase
+	forumsUseacse forum.Usecase
 }
 
-func NewThreadHandler(router *router.Router, threadUsecase thread.Usecase) *ThreadHandler {
+func NewThreadHandler(router *router.Router, threadUsecase thread.Usecase,
+	forumUsecase forum.Usecase) *ThreadHandler {
 	threadHandler := &ThreadHandler{
 		router:        router,
 		threadUsecase: threadUsecase,
+		forumsUseacse: forumUsecase,
 	}
 
 	router.POST("/api/forum/{slug}/create", middlware.ContentTypeJson(threadHandler.CreateThread))
@@ -84,19 +88,23 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 
 	threads, err := handler.threadUsecase.GetThreadsByForumSlug(slug, since, desc, limit)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("tut" + err.Error())
 		ctx.SetStatusCode(http.StatusNotFound)
 		resp := responses.Response{Message: "Can't threds with forum slug " + slug}
 		body, _ := resp.MarshalJSON()
 		ctx.SetBody(body)
 		return
 	}
+
 	if len(threads) == 0 {
-		ctx.SetStatusCode(http.StatusNotFound)
-		resp := responses.Response{Message: "Can't threds with forum slug " + slug}
-		body, _ := resp.MarshalJSON()
-		ctx.SetBody(body)
-		return
+		_, err = handler.forumsUseacse.GetForumBySlug(slug)
+		if err != nil {
+			ctx.SetStatusCode(http.StatusNotFound)
+			resp := responses.Response{Message: "Can't threds with forum slug " + slug}
+			body, _ := resp.MarshalJSON()
+			ctx.SetBody(body)
+			return
+		}
 	}
 	body, err := json.Marshal(threads)
 	if err != nil {
