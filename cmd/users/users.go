@@ -2,8 +2,11 @@ package main
 
 import (
 	forumHTTP "TechnoParkDBProject/internal/app/forum/delivery/http"
-	forumRepositoru "TechnoParkDBProject/internal/app/forum/repository"
+	forumRepository "TechnoParkDBProject/internal/app/forum/repository"
 	forumUsecase "TechnoParkDBProject/internal/app/forum/usecase"
+	postHTTP "TechnoParkDBProject/internal/app/posts/delivery/http"
+	postRepository "TechnoParkDBProject/internal/app/posts/repository"
+	postUsecase "TechnoParkDBProject/internal/app/posts/usecase"
 	threadHTTP "TechnoParkDBProject/internal/app/thread/delivery/http"
 	threadRepositoru "TechnoParkDBProject/internal/app/thread/repository"
 	threadUsecase "TechnoParkDBProject/internal/app/thread/usecase"
@@ -33,16 +36,19 @@ func main() {
 	defer dbpool.Close()
 
 	userRep := repository.NewUserRepository(dbpool)
-	forumRep := forumRepositoru.NewUserRepository(dbpool)
+	forumRep := forumRepository.NewUserRepository(dbpool)
 	thredRep := threadRepositoru.NewThreadRepository(dbpool)
+	postsRep := postRepository.NewPostsRepository(dbpool)
 
 	userUsecase := usecase.NewUserUsecase(userRep)
 	forumUsec := forumUsecase.NewForumUsecase(forumRep)
 	thredUsec := threadUsecase.NewThreadUsecase(thredRep)
+	postUse := postUsecase.NewPostsUsecase(postsRep)
 
 	userHTTP.NewUserHandler(router, userUsecase)
 	forumHTTP.NewForumHandler(router, forumUsec, userUsecase)
 	threadHTTP.NewThreadHandler(router, thredUsec, forumUsec)
+	postHTTP.NewPostsHandler(router, postUse)
 
 	err = fasthttp.ListenAndServe(":5000", router.Handler)
 	fmt.Println(err)

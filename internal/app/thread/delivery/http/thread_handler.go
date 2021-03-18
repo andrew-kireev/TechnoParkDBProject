@@ -44,7 +44,6 @@ func (handler *ThreadHandler) CreateThread(ctx *fasthttp.RequestCtx) {
 		return
 	}
 	thread, err = handler.threadUsecase.CreateThread(thread)
-	fmt.Println(thread)
 	if err != nil {
 		fmt.Println(err)
 		oldThread, errFind := handler.threadUsecase.FindThreadBySlug(slug)
@@ -77,7 +76,6 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 		fmt.Println(err)
 	}
 	since := string(ctx.QueryArgs().Peek("since"))
-	fmt.Println(since)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -115,3 +113,5 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(http.StatusOK)
 	ctx.SetBody(body)
 }
+
+

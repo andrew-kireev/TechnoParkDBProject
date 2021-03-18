@@ -76,7 +76,6 @@ func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc s
 		query += " ORDER BY t.created"
 	}
 	query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
-	fmt.Println(query)
 	var rows pgx.Rows
 	var err error
 	if since != "" {
