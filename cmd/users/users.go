@@ -43,7 +43,7 @@ func main() {
 	userUsecase := usecase.NewUserUsecase(userRep)
 	forumUsec := forumUsecase.NewForumUsecase(forumRep)
 	thredUsec := threadUsecase.NewThreadUsecase(thredRep)
-	postUse := postUsecase.NewPostsUsecase(postsRep)
+	postUse := postUsecase.NewPostsUsecase(postsRep, thredRep)
 
 	userHTTP.NewUserHandler(router, userUsecase)
 	forumHTTP.NewForumHandler(router, forumUsec, userUsecase)

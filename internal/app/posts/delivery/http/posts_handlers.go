@@ -29,19 +29,15 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 
 func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	slug := ctx.UserValue("slug").(string)
-	//post := &models.Post{Thread: slug}
 	posts := make([]*models.Post, 0)
 
 	err := json.Unmarshal(ctx.PostBody(), &posts)
-	for _, post := range posts {
-		post.Thread = slug
-	}
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}
-	posts, err = postHandler.postUsecase.CreatePost(posts)
+	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
@@ -50,7 +46,9 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	if posts == nil {
 		return
 	}
-	fmt.Println(posts)
+	for _, post := range posts {
+		fmt.Println(post)
+	}
 	ctx.SetStatusCode(http.StatusCreated)
 	body, err := json.Marshal(posts)
 	ctx.SetBody(body)

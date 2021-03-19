@@ -1,10 +1,13 @@
 package repository
 
 import (
+	forumModels "TechnoParkDBProject/internal/app/forum/models"
 	"TechnoParkDBProject/internal/app/posts/models"
 	"context"
 	"fmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"time"
 )
 
 type PostsRepository struct {
@@ -27,7 +30,8 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 		if i != 0 {
 			query += ", "
 		}
-		query += fmt.Sprintf("(%d, %s, %s, %s, %s)", post.Parent, post.Author,
+
+		query += fmt.Sprintf("(%d, '%s', '%s', '%s', %d)", post.Parent, post.Author,
 			post.Message, post.Forum, post.Thread)
 	}
 	query += "returning id, parent, author, message, is_edited, forum, thread, created"
@@ -37,13 +41,31 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 	if err != nil {
 		return nil, err
 	}
+	newPosts := make([]*models.Post, 0)
 	defer rows.Close()
 	for rows.Next() {
+		t := &time.Time{}
 		post := &models.Post{}
 		err = rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message,
-			&post.IsEdited, &post.Forum, &post.Thread, &post.Created)
-		posts = append(posts, post)
+			&post.IsEdited, &post.Forum, &post.Thread, t)
+		post.Created = strfmt.DateTime(t.UTC()).String()
+		newPosts = append(newPosts, post)
 	}
 
-	return posts, nil
+	return newPosts, nil
+}
+
+func (postRep *PostsRepository) FindForumByThreadID(threadID int) (*forumModels.Forum, error) {
+	query := `SELECT f.title, f.user_nickname, f.slug FROM forum as f
+			left join threads t on f.slug = t.forum
+			where t.id = $1`
+
+	forum := &forumModels.Forum{}
+	err := postRep.Conn.QueryRow(context.Background(), query,
+		threadID).Scan(&forum.Tittle, &forum.UserNickname, &forum.Slug)
+	if err != nil {
+		return nil, err
+	}
+
+	return forum, nil
 }

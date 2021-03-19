@@ -49,7 +49,7 @@ func easyjsonDc9e8747DecodeTechnoParkDBProjectInternalAppPostsModels(in *jlexer.
 		case "forum":
 			out.Forum = string(in.String())
 		case "thread":
-			out.Thread = string(in.String())
+			out.Thread = int(in.Int())
 		case "created":
 			out.Created = string(in.String())
 		default:
@@ -99,7 +99,7 @@ func easyjsonDc9e8747EncodeTechnoParkDBProjectInternalAppPostsModels(out *jwrite
 	{
 		const prefix string = ",\"thread\":"
 		out.RawString(prefix)
-		out.String(string(in.Thread))
+		out.Int(int(in.Thread))
 	}
 	{
 		const prefix string = ",\"created\":"

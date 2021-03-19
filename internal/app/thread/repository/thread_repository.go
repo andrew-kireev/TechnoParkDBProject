@@ -46,11 +46,30 @@ func (thredRep *ThreadRepository) FindThreadBySlug(slug string) (*models.Thread,
 	query := `SELECT id, title, author, forum, message, votes, slug, created from threads
 			WHERE slug = $1`
 	thread := &models.Thread{}
+	t := &time.Time{}
 
 	err := thredRep.Conn.QueryRow(context.Background(), query, slug).Scan(&thread.ID, &thread.Title,
 		&thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
-		&thread.Slug, &thread.Created,
+		&thread.Slug, t,
 	)
+	thread.Created = strfmt.DateTime(t.UTC()).String()
+	if err != nil {
+		return nil, err
+	}
+	return thread, nil
+}
+
+func (thredRep *ThreadRepository) FindThreadByID(threadID int) (*models.Thread, error) {
+	query := `SELECT id, title, author, forum, message, votes, slug, created from threads
+			WHERE id = $1`
+	thread := &models.Thread{}
+	t := &time.Time{}
+
+	err := thredRep.Conn.QueryRow(context.Background(), query, threadID).Scan(&thread.ID, &thread.Title,
+		&thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
+		&thread.Slug, t,
+	)
+	thread.Created = strfmt.DateTime(t.UTC()).String()
 	if err != nil {
 		return nil, err
 	}
