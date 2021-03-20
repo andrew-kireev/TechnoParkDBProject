@@ -55,6 +55,15 @@ func (handler *ThreadHandler) CreateThread(ctx *fasthttp.RequestCtx) {
 		ctx.SetBody(body)
 		return
 	}
+	forum, err := handler.forumsUseacse.GetForumBySlug(thread.Forum)
+	if err != nil {
+		response := responses.Response{Message: "Can't find thread with slug " + slug}
+		body, _ := response.MarshalJSON()
+		ctx.SetStatusCode(http.StatusNotFound)
+		ctx.SetBody(body)
+		return
+	}
+	thread.Forum = forum.Slug
 	thread, err = handler.threadUsecase.CreateThread(thread)
 	if err != nil {
 		fmt.Println(err)
@@ -100,7 +109,7 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		fmt.Println("tut" + err.Error())
 		ctx.SetStatusCode(http.StatusNotFound)
-		resp := responses.Response{Message: "Can't threds with forum slug " + slug}
+		resp := responses.Response{Message: "Can't threads with forum slug " + slug}
 		body, _ := resp.MarshalJSON()
 		ctx.SetBody(body)
 		return
@@ -110,7 +119,7 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 		_, err = handler.forumsUseacse.GetForumBySlug(slug)
 		if err != nil {
 			ctx.SetStatusCode(http.StatusNotFound)
-			resp := responses.Response{Message: "Can't threds with forum slug " + slug}
+			resp := responses.Response{Message: "Can't threads with forum slug " + slug}
 			body, _ := resp.MarshalJSON()
 			ctx.SetBody(body)
 			return
@@ -125,5 +134,3 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 	ctx.SetStatusCode(http.StatusOK)
 	ctx.SetBody(body)
 }
-
-

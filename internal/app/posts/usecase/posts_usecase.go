@@ -3,8 +3,8 @@ package usecase
 import (
 	"TechnoParkDBProject/internal/app/posts"
 	"TechnoParkDBProject/internal/app/posts/models"
-	threadModels "TechnoParkDBProject/internal/app/thread/models"
 	"TechnoParkDBProject/internal/app/thread"
+	threadModels "TechnoParkDBProject/internal/app/thread/models"
 	"strconv"
 )
 

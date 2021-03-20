@@ -103,7 +103,9 @@ func (userRep *UserRepository) GetUserByEmail(email string) (*models.User, error
 }
 
 func (userRep *UserRepository) DeleteAll() error {
-	query := `DELETE FROM threads;
+	query := `DELETE FROM votes;
+			DELETE FROM posts;
+			DELETE FROM threads;
 			DELETE FROM forum;
 			DELETE FROM users;`
 

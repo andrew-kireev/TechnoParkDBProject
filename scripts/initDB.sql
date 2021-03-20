@@ -28,3 +28,29 @@ CREATE TABLE IF NOT EXISTS threads
     slug    citext unique,
     created timestamp with time zone default now()
 );
+
+CREATE TABLE IF NOT EXISTS votes
+(
+    nickname  citext not null references users (nickname),
+    thread_id int    not null references threads (id),
+    voice     int    not null,
+    unique (nickname, thread_id)
+);
+
+CREATE OR REPLACE FUNCTION insert_votes_threads()
+    RETURNS TRIGGER AS
+$insert_votes_threads$
+BEGIN
+    UPDATE threads
+    SET votes = NEW.voice
+    WHERE id = NEW.thread_id;
+    RETURN NEW;
+END;
+$insert_votes_threads$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS insert_votes_threads ON votes;
+CREATE TRIGGER insert_votes_threads
+    AFTER INSERT
+    ON votes
+    FOR EACH ROW
+EXECUTE PROCEDURE insert_votes_threads();
