@@ -36,6 +36,16 @@ func (voteUsecase *VoteUsecase) CreateNewVote(vote *models.Vote, slugOrID string
 	}
 	vote.ThreadID = th.ID
 	err = voteUsecase.voteRep.CreateNewVote(vote)
-	th.Votes += 1
+	if err != nil {
+		linesUpdated, err := voteUsecase.voteRep.UpdateVote(vote)
+		if err != nil {
+			return nil, err
+		}
+		if linesUpdated != 0 {
+			th.Votes += 2 * vote.Voice
+		}
+		return th, err
+	}
+	th.Votes += vote.Voice
 	return th, err
 }

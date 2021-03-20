@@ -24,3 +24,11 @@ func (voteRep *VoteRepository) CreateNewVote(vote *models.Vote) error {
 		vote.ThreadID, vote.Voice)
 	return err
 }
+
+func (voteRep *VoteRepository) UpdateVote(vote *models.Vote) (int, error) {
+	query := `UPDATE votes SET voice = $1
+		WHERE thread_id = $2 and nickname = $3 and voice != $1`
+
+	res, err := voteRep.Conn.Exec(context.Background(), query, vote.Voice, vote.ThreadID, vote.Nickname)
+	return int(res.RowsAffected()), err
+}
