@@ -30,6 +30,7 @@ func NewThreadHandler(router *router.Router, threadUsecase thread.Usecase,
 
 	router.POST("/api/forum/{slug}/create", middlware.ContentTypeJson(threadHandler.CreateThread))
 	router.GET("/api/forum/{slug}/threads", middlware.ContentTypeJson(threadHandler.GetThreads))
+	router.GET("/api/thread/{slug_or_id}/details", middlware.ContentTypeJson(threadHandler.GetThread))
 	return threadHandler
 }
 
@@ -126,6 +127,27 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 		}
 	}
 	body, err := json.Marshal(threads)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	ctx.SetStatusCode(http.StatusOK)
+	ctx.SetBody(body)
+}
+
+func (handler *ThreadHandler) GetThread(ctx *fasthttp.RequestCtx) {
+	slugOrID := ctx.UserValue("slug_or_id").(string)
+
+	thread, err := handler.threadUsecase.GetThreadBySlugOrID(slugOrID)
+	if err != nil {
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: "Can't threads with forum slug " + slugOrID}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
+		return
+	}
+	body, err := thread.MarshalJSON()
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
