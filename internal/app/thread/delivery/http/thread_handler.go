@@ -31,6 +31,7 @@ func NewThreadHandler(router *router.Router, threadUsecase thread.Usecase,
 	router.POST("/api/forum/{slug}/create", middlware.ContentTypeJson(threadHandler.CreateThread))
 	router.GET("/api/forum/{slug}/threads", middlware.ContentTypeJson(threadHandler.GetThreads))
 	router.GET("/api/thread/{slug_or_id}/details", middlware.ContentTypeJson(threadHandler.GetThread))
+	router.POST("/api/thread/{slug_or_id}/details", middlware.ContentTypeJson(threadHandler.UpdateThread))
 	return threadHandler
 }
 
@@ -143,6 +144,38 @@ func (handler *ThreadHandler) GetThread(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		ctx.SetStatusCode(http.StatusNotFound)
 		resp := responses.Response{Message: "Can't threads with forum slug " + slugOrID}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
+		return
+	}
+	body, err := thread.MarshalJSON()
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	ctx.SetStatusCode(http.StatusOK)
+	ctx.SetBody(body)
+}
+
+func (handler *ThreadHandler) UpdateThread(ctx *fasthttp.RequestCtx) {
+	slugOrID := ctx.UserValue("slug_or_id").(string)
+	updateReq := &models.UpdateRequest{}
+	err := updateReq.UnmarshalJSON(ctx.Request.Body())
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	thread := &models.Thread{
+		Title:   updateReq.Title,
+		Message: updateReq.Message,
+	}
+	thread, err = handler.threadUsecase.UpdateTreads(slugOrID, thread)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: "Can't find thread with slug " + slugOrID}
 		body, _ := resp.MarshalJSON()
 		ctx.SetBody(body)
 		return

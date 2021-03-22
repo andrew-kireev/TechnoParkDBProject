@@ -115,10 +115,41 @@ func (thredRep *ThreadRepository) GetThreadsByForumSlug(forumSlug, since, desc s
 			&thread.Author, &thread.Forum, &thread.Message, &thread.Votes,
 			&thread.Slug, t)
 		thread.Created = strfmt.DateTime(t.UTC()).String()
-		//if err != nil {
-		//	fmt.Println(err)
-		//}
 		threads = append(threads, thread)
 	}
 	return threads, nil
+}
+
+func (threadRep *ThreadRepository) UpdateThreadSlug(thread *models.Thread) (*models.Thread, error) {
+	query := `UPDATE threads SET title = $1, message = $2
+			WHERE slug = $3
+			returning id, title, author, forum, message, votes, slug, created`
+
+	t := &time.Time{}
+	err := threadRep.Conn.QueryRow(context.Background(), query, thread.Title, thread.Message,
+		thread.Slug).Scan(&thread.ID, &thread.Title, &thread.Author, &thread.Forum,
+		&thread.Message, &thread.Votes, &thread.Slug, t)
+	if err != nil {
+		return nil, err
+	}
+	thread.Created = strfmt.DateTime(t.UTC()).String()
+
+	return thread, nil
+}
+
+func (threadRep *ThreadRepository) UpdateThreadByID(thread *models.Thread) (*models.Thread, error) {
+	query := `UPDATE threads SET title = $1, message = $2
+			WHERE id = $3
+			returning id, title, author, forum, message, votes, slug, created`
+
+	t := &time.Time{}
+	err := threadRep.Conn.QueryRow(context.Background(), query, thread.Title, thread.Message,
+		thread.ID).Scan(&thread.ID, &thread.Title, &thread.Author, &thread.Forum,
+		&thread.Message, &thread.Votes, &thread.Slug, t)
+	if err != nil {
+		return nil, err
+	}
+	thread.Created = strfmt.DateTime(t.UTC()).String()
+
+	return thread, nil
 }

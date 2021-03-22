@@ -47,3 +47,41 @@ func (threadUsecase *ThreadUsecase) GetThreadBySlugOrID(slugOrID string) (*model
 	}
 	return thread, err
 }
+
+func (threadUsecase *ThreadUsecase) UpdateTreads(slugOrID string, th *models.Thread) (*models.Thread, error) {
+	threadID, err := strconv.Atoi(slugOrID)
+	if err != nil {
+		th.Slug = slugOrID
+		oldThread, errRep := threadUsecase.threadRep.FindThreadBySlug(slugOrID)
+		if errRep != nil {
+			return nil, errRep
+		}
+		if th.Title == "" {
+			th.Title = oldThread.Title
+		}
+		if th.Message == "" {
+			th.Message = oldThread.Message
+		}
+		th, errRep = threadUsecase.threadRep.UpdateThreadSlug(th)
+		if errRep != nil {
+			return nil, errRep
+		}
+	} else {
+		th.ID = threadID
+		oldThread, errRep := threadUsecase.threadRep.FindThreadByID(threadID)
+		if errRep != nil {
+			return nil, errRep
+		}
+		if th.Title == "" {
+			th.Title = oldThread.Title
+		}
+		if th.Message == "" {
+			th.Message = oldThread.Message
+		}
+		th, errRep = threadUsecase.threadRep.UpdateThreadByID(th)
+		if errRep != nil {
+			return nil, errRep
+		}
+	}
+	return th, nil
+}

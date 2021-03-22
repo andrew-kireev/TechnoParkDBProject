@@ -6,3 +6,8 @@ type Request struct {
 	Message string      `json:"message"`
 	Created interface{} `json:"created"`
 }
+
+type UpdateRequest struct {
+	Title   string      `json:"title"`
+	Message string      `json:"message"`
+}
