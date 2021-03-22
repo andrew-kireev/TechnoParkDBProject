@@ -117,3 +117,21 @@ func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string
 	}
 	return posts, nil
 }
+
+func (postRep *PostsRepository) GetPost(postID int) (*models.Post, error) {
+	query := `SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+			WHERE id = $1`
+
+	post := &models.Post{}
+	t := &time.Time{}
+
+	err := postRep.Conn.QueryRow(context.Background(), query, postID).Scan(&post.ID,
+		&post.Parent, &post.Author, &post.Message, &post.IsEdited, &post.Forum,
+		&post.Thread, t)
+	post.Created = strfmt.DateTime(t.UTC()).String()
+
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
+}

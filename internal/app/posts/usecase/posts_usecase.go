@@ -57,3 +57,8 @@ func (postUsecase *PostsUsecase) GetPosts(sort, since, slugOrID string, limit in
 	posts, err := postUsecase.postsRep.GetPosts(limit, thread.ID, sort, since, desc)
 	return posts, err
 }
+
+func (posUse *PostsUsecase) GetPost(posID int) (*models.Post, error) {
+	post, err := posUse.postsRep.GetPost(posID)
+	return post, err
+}

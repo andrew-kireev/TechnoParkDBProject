@@ -10,6 +10,7 @@ import (
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
 	"net/http"
+	"strconv"
 )
 
 type PostsHandler struct {
@@ -25,6 +26,7 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 
 	postsHandler.router.POST("/api/thread/{slug}/create", middlware.ContentTypeJson(postsHandler.CreatePost))
 	postsHandler.router.GET("/api/thread/{slug_or_id}/posts", middlware.ContentTypeJson(postsHandler.GetPosts))
+	postsHandler.router.GET("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.GetPostHandler))
 
 	return postsHandler
 }
@@ -76,6 +78,31 @@ func (postHandler *PostsHandler) GetPosts(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
+	}
+	ctx.SetStatusCode(http.StatusOK)
+	ctx.SetBody(body)
+}
+
+func (handler *PostsHandler) GetPostHandler(ctx *fasthttp.RequestCtx) {
+	postID, err := strconv.Atoi(ctx.UserValue("id").(string))
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+
+	post, err := handler.postUsecase.GetPost(postID)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusNotFound)
+		return
+	}
+	postResp := &models.PostResponse{Post: post}
+
+	body, err := postResp.MarshalJSON()
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
 	}
 	ctx.SetStatusCode(http.StatusOK)
 	ctx.SetBody(body)
