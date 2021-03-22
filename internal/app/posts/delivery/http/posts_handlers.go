@@ -11,6 +11,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type PostsHandler struct {
@@ -85,21 +86,31 @@ func (postHandler *PostsHandler) GetPosts(ctx *fasthttp.RequestCtx) {
 
 func (handler *PostsHandler) GetPostHandler(ctx *fasthttp.RequestCtx) {
 	postID, err := strconv.Atoi(ctx.UserValue("id").(string))
+
+	relatedArr := string(ctx.QueryArgs().Peek("related"))
+	fmt.Println(relatedArr)
+	relatedStrs := strings.Split(relatedArr, ",")
+	for len(relatedStrs) < 3 {
+		relatedStrs = append(relatedStrs, "")
+	}
+	fmt.Println(relatedStrs)
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}
 
-	post, err := handler.postUsecase.GetPost(postID)
+	postResponse, err := handler.postUsecase.GetPost(postID, relatedStrs)
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: fmt.Sprintf("Can't find post with id %d", postID)}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
 		return
 	}
-	postResp := &models.PostResponse{Post: post}
 
-	body, err := postResp.MarshalJSON()
+	body, err := postResponse.MarshalJSON()
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)

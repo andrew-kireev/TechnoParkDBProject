@@ -1,10 +1,14 @@
 package models
 
-type PostResponse struct {
-	Post *Post `json:"post"`
-}
+import (
+	modelsForum "TechnoParkDBProject/internal/app/forum/models"
+	modelsThread "TechnoParkDBProject/internal/app/thread/models"
+	modelsUser "TechnoParkDBProject/internal/app/user/models"
+)
 
-func test() {
-	p := &PostResponse{}
-	p.MarshalJSON()
+type PostResponse struct {
+	Post   *Post                `json:"post"`
+	User   *modelsUser.User     `json:"author,omitempty"`
+	Forum  *modelsForum.Forum   `json:"forum,omitempty"`
+	Thread *modelsThread.Thread `json:"thread,omitempty"`
 }

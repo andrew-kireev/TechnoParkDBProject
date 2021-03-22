@@ -1,22 +1,30 @@
 package usecase
 
 import (
+	"TechnoParkDBProject/internal/app/forum"
 	"TechnoParkDBProject/internal/app/posts"
 	"TechnoParkDBProject/internal/app/posts/models"
 	"TechnoParkDBProject/internal/app/thread"
 	threadModels "TechnoParkDBProject/internal/app/thread/models"
+	"TechnoParkDBProject/internal/app/user"
+	"TechnoParkDBProject/internal/pkg/utils"
 	"strconv"
 )
 
 type PostsUsecase struct {
 	postsRep  posts.Repository
 	threadRep thread.Repository
+	forumRep  forum.Repository
+	userRep   user.Repository
 }
 
-func NewPostsUsecase(postsRep posts.Repository, threadRep thread.Repository) *PostsUsecase {
+func NewPostsUsecase(postsRep posts.Repository, threadRep thread.Repository,
+	forumRep forum.Repository, userRep user.Repository) *PostsUsecase {
 	return &PostsUsecase{
 		postsRep:  postsRep,
 		threadRep: threadRep,
+		forumRep:  forumRep,
+		userRep:   userRep,
 	}
 }
 
@@ -58,7 +66,32 @@ func (postUsecase *PostsUsecase) GetPosts(sort, since, slugOrID string, limit in
 	return posts, err
 }
 
-func (posUse *PostsUsecase) GetPost(posID int) (*models.Post, error) {
+func (posUse *PostsUsecase) GetPost(posID int, relatedStrs []string) (*models.PostResponse, error) {
 	post, err := posUse.postsRep.GetPost(posID)
-	return post, err
+	if err != nil {
+		return nil, err
+	}
+	postResponse := &models.PostResponse{Post: post}
+	if utils.Find(relatedStrs, "user") {
+		user, err := posUse.userRep.GetUserByNickname(post.Author)
+		if err != nil {
+			return nil, err
+		}
+		postResponse.User = user
+	}
+	if utils.Find(relatedStrs, "forum") {
+		forum, err := posUse.forumRep.GetForumBySlug(post.Forum)
+		if err != nil {
+			return nil, err
+		}
+		postResponse.Forum = forum
+	}
+	if utils.Find(relatedStrs, "thread") {
+		thread, err := posUse.threadRep.FindThreadByID(post.Thread)
+		if err != nil {
+			return nil, err
+		}
+		postResponse.Thread = thread
+	}
+	return postResponse, err
 }

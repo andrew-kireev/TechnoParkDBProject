@@ -3,6 +3,9 @@
 package models
 
 import (
+	models1 "TechnoParkDBProject/internal/app/forum/models"
+	models2 "TechnoParkDBProject/internal/app/thread/models"
+	models "TechnoParkDBProject/internal/app/user/models"
 	json "encoding/json"
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
@@ -46,6 +49,36 @@ func easyjson830561beDecodeTechnoParkDBProjectInternalAppPostsModels(in *jlexer.
 				}
 				(*out.Post).UnmarshalEasyJSON(in)
 			}
+		case "author":
+			if in.IsNull() {
+				in.Skip()
+				out.User = nil
+			} else {
+				if out.User == nil {
+					out.User = new(models.User)
+				}
+				(*out.User).UnmarshalEasyJSON(in)
+			}
+		case "forum":
+			if in.IsNull() {
+				in.Skip()
+				out.Forum = nil
+			} else {
+				if out.Forum == nil {
+					out.Forum = new(models1.Forum)
+				}
+				(*out.Forum).UnmarshalEasyJSON(in)
+			}
+		case "thread":
+			if in.IsNull() {
+				in.Skip()
+				out.Thread = nil
+			} else {
+				if out.Thread == nil {
+					out.Thread = new(models2.Thread)
+				}
+				(*out.Thread).UnmarshalEasyJSON(in)
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -68,6 +101,21 @@ func easyjson830561beEncodeTechnoParkDBProjectInternalAppPostsModels(out *jwrite
 		} else {
 			(*in.Post).MarshalEasyJSON(out)
 		}
+	}
+	if in.User != nil {
+		const prefix string = ",\"author\":"
+		out.RawString(prefix)
+		(*in.User).MarshalEasyJSON(out)
+	}
+	if in.Forum != nil {
+		const prefix string = ",\"forum\":"
+		out.RawString(prefix)
+		(*in.Forum).MarshalEasyJSON(out)
+	}
+	if in.Thread != nil {
+		const prefix string = ",\"thread\":"
+		out.RawString(prefix)
+		(*in.Thread).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
