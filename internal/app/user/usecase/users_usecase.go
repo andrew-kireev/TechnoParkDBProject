@@ -44,3 +44,8 @@ func (userUse *UserUsecase) DeleteAll() error {
 	err := userUse.userRep.DeleteAll()
 	return err
 }
+
+func (userUse *UserUsecase) GetStatus() (*models.Status, error) {
+	status, err := userUse.userRep.GetStatus()
+	return status, err
+}

@@ -31,6 +31,8 @@ func NewUserHandler(router *router.Router, userUsecase user.Usecase) *UserHandle
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.UpdateUserHandler)))
 	userHandler.router.POST("/api/service/clear",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.DeleteAllHandler)))
+	userHandler.router.GET("/api/service/status",
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.GetStatus)))
 	return userHandler
 }
 
@@ -163,4 +165,18 @@ func (handler *UserHandler) DeleteAllHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	ctx.SetStatusCode(http.StatusOK)
+}
+
+func (handler *UserHandler) GetStatus(ctx *fasthttp.RequestCtx) {
+	status, err := handler.userUsecase.GetStatus()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	body, err := status.MarshalJSON()
+	if err != nil {
+		ctx.SetStatusCode(http.StatusInternalServerError)
+	}
+	ctx.SetStatusCode(http.StatusOK)
+	ctx.SetBody(body)
 }

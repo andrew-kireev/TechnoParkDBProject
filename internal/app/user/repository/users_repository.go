@@ -116,3 +116,31 @@ func (userRep *UserRepository) DeleteAll() error {
 	}
 	return nil
 }
+
+func (userRep *UserRepository) GetStatus() (*models.Status, error){
+	queryUser := `SELECT COUNT(*) as user_count FROM users;`
+	queryForum := `SELECT COUNT(*) as forum_count FROM forum;`
+	queryThread := `SELECT COUNT(*) as thread_count FROM threads;`
+	queryPost := `SELECT COUNT(*) as post_count FROM posts;`
+
+	status := &models.Status{}
+
+	err := userRep.Conn.QueryRow(context.Background(), queryUser).Scan(&status.User)
+	if err != nil {
+		return nil, err
+	}
+	err = userRep.Conn.QueryRow(context.Background(), queryForum).Scan(&status.Forum)
+	if err != nil {
+		return nil, err
+	}
+	err = userRep.Conn.QueryRow(context.Background(), queryThread).Scan(&status.Thread)
+	if err != nil {
+		return nil, err
+	}
+	err = userRep.Conn.QueryRow(context.Background(), queryPost).Scan(&status.Post)
+	if err != nil {
+		return nil, err
+	}
+
+	return status, nil
+}
