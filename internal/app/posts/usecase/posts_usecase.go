@@ -41,3 +41,19 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 	posts, err = postUsecase.postsRep.CreatePost(posts)
 	return posts, err
 }
+
+func (postUsecase *PostsUsecase) GetPosts(sort, since, slugOrID string, limit int, desc bool) ([]*models.Post, error) {
+	threadID, err := strconv.Atoi(slugOrID)
+	thread := &threadModels.Thread{}
+	if err != nil {
+		thread, err = postUsecase.threadRep.FindThreadBySlug(slugOrID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		thread.ID = threadID
+	}
+
+	posts, err := postUsecase.postsRep.GetPosts(limit, thread.ID, sort, since, desc)
+	return posts, err
+}

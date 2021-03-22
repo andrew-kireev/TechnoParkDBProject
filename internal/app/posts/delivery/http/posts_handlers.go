@@ -4,6 +4,7 @@ import (
 	"TechnoParkDBProject/internal/app/middlware"
 	"TechnoParkDBProject/internal/app/posts"
 	"TechnoParkDBProject/internal/app/posts/models"
+	"TechnoParkDBProject/internal/pkg/responses"
 	"encoding/json"
 	"fmt"
 	"github.com/fasthttp/router"
@@ -23,6 +24,7 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 	}
 
 	postsHandler.router.POST("/api/thread/{slug}/create", middlware.ContentTypeJson(postsHandler.CreatePost))
+	postsHandler.router.GET("/api/thread/{slug_or_id}/posts", middlware.ContentTypeJson(postsHandler.GetPosts))
 
 	return postsHandler
 }
@@ -46,10 +48,35 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	if posts == nil {
 		return
 	}
-	for _, post := range posts {
-		fmt.Println(post)
-	}
 	ctx.SetStatusCode(http.StatusCreated)
 	body, err := json.Marshal(posts)
+	ctx.SetBody(body)
+}
+
+func (postHandler *PostsHandler) GetPosts(ctx *fasthttp.RequestCtx) {
+	slugOrID := ctx.UserValue("slug_or_id").(string)
+	since := string(ctx.QueryArgs().Peek("since"))
+	limit, err := ctx.QueryArgs().GetUint("limit")
+	if err != nil {
+		fmt.Println(err)
+	}
+	sort := string(ctx.QueryArgs().Peek("sort"))
+	desc := ctx.QueryArgs().GetBool("desc")
+	fmt.Println(slugOrID, since, limit, sort, desc)
+	posts, err := postHandler.postUsecase.GetPosts(sort, since, slugOrID, limit, desc)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: "Can't threads with forum slug " + slugOrID}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
+		return
+	}
+	body, err := json.Marshal(posts)
+	if err != nil {
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	ctx.SetStatusCode(http.StatusOK)
 	ctx.SetBody(body)
 }

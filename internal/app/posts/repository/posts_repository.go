@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-openapi/strfmt"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"time"
 )
@@ -35,7 +36,6 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 			post.Message, post.Forum, post.Thread)
 	}
 	query += "returning id, parent, author, message, is_edited, forum, thread, created"
-	fmt.Println(query)
 
 	rows, err := postRep.Conn.Query(context.Background(), query)
 	if err != nil {
@@ -68,4 +68,52 @@ func (postRep *PostsRepository) FindForumByThreadID(threadID int) (*forumModels.
 	}
 
 	return forum, nil
+}
+
+func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string, desc bool) ([]*models.Post, error) {
+	query := `SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+			WHERE thread = $1`
+	if since != "" && desc {
+		query += " and created <= $2"
+	} else if since != "" && !desc {
+		query += " and created >= $2"
+	} else if since != "" {
+		query += " and created >= $2"
+	}
+	if desc {
+		query += " ORDER BY created desc"
+	} else if !desc {
+		query += " ORDER BY created asc"
+	} else {
+		query += " ORDER BY created"
+	}
+	query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
+
+	fmt.Println(query)
+
+	var rows pgx.Rows
+	var err error
+	if since != "" {
+		rows, err = postRep.Conn.Query(context.Background(), query, threadID, since)
+	} else {
+		rows, err = postRep.Conn.Query(context.Background(), query, threadID)
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	posts := make([]*models.Post, 0)
+	for rows.Next() {
+		t := &time.Time{}
+		post := &models.Post{}
+		err = rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message,
+			&post.IsEdited, &post.Forum, &post.Thread, t)
+		post.Created = strfmt.DateTime(t.UTC()).String()
+		if err != nil {
+			fmt.Println(err)
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }

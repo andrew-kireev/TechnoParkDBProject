@@ -108,7 +108,7 @@ func (handler *ThreadHandler) GetThreads(ctx *fasthttp.RequestCtx) {
 
 	threads, err := handler.threadUsecase.GetThreadsByForumSlug(slug, since, desc, limit)
 	if err != nil {
-		fmt.Println("tut" + err.Error())
+		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusNotFound)
 		resp := responses.Response{Message: "Can't threads with forum slug " + slug}
 		body, _ := resp.MarshalJSON()
