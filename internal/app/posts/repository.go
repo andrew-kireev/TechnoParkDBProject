@@ -10,4 +10,5 @@ type Repository interface {
 	FindForumByThreadID(threadID int) (*forumModels.Forum, error)
 	GetPosts(limit, threadID int, sort, since string, desc bool) ([]*models.Post, error)
 	GetPost(postID int) (*models.Post, error)
+	UpdatePostByID(post *models.Post) (*models.Post, error)
 }

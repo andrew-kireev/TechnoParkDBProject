@@ -8,6 +8,6 @@ type Request struct {
 }
 
 type UpdateRequest struct {
-	Title   string      `json:"title"`
-	Message string      `json:"message"`
+	Title   string `json:"title"`
+	Message string `json:"message"`
 }

@@ -31,12 +31,11 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 		if i != 0 {
 			query += ", "
 		}
-
 		query += fmt.Sprintf("(%d, '%s', '%s', '%s', %d)", post.Parent, post.Author,
 			post.Message, post.Forum, post.Thread)
 	}
-	query += "returning id, parent, author, message, is_edited, forum, thread, created"
-
+	query += " returning id, parent, author, message, is_edited, forum, thread, created"
+	fmt.Println(query)
 	rows, err := postRep.Conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -48,6 +47,10 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 		post := &models.Post{}
 		err = rows.Scan(&post.ID, &post.Parent, &post.Author, &post.Message,
 			&post.IsEdited, &post.Forum, &post.Thread, t)
+		fmt.Println(err)
+		if err != nil {
+			return nil, err
+		}
 		post.Created = strfmt.DateTime(t.UTC()).String()
 		newPosts = append(newPosts, post)
 	}
@@ -133,5 +136,30 @@ func (postRep *PostsRepository) GetPost(postID int) (*models.Post, error) {
 	if err != nil {
 		return nil, err
 	}
+	return post, nil
+}
+
+func (postRep *PostsRepository) UpdatePostByID(post *models.Post) (*models.Post, error) {
+	query := `UPDATE posts
+SET message   = (CASE
+                     WHEN LTRIM($1) = '' THEN message
+                     ELSE $1 END),
+    is_edited = (CASE
+                     WHEN LTRIM($1) = '' THEN false
+                     ELSE true END)
+WHERE id = $2
+returning id, parent, author, message, is_edited, forum, thread, created `
+
+	fmt.Println(query)
+
+	t := &time.Time{}
+	err := postRep.Conn.QueryRow(context.Background(), query, post.Message, post.ID).Scan(
+		&post.ID, &post.Parent, &post.Author, &post.Message,
+		&post.IsEdited, &post.Forum, &post.Thread, t)
+	if err != nil {
+		return nil, err
+	}
+	post.Created = strfmt.DateTime(t.UTC()).String()
+
 	return post, nil
 }

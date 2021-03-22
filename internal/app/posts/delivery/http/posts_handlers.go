@@ -28,6 +28,7 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 	postsHandler.router.POST("/api/thread/{slug}/create", middlware.ContentTypeJson(postsHandler.CreatePost))
 	postsHandler.router.GET("/api/thread/{slug_or_id}/posts", middlware.ContentTypeJson(postsHandler.GetPosts))
 	postsHandler.router.GET("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.GetPostHandler))
+	postsHandler.router.POST("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.UpdatePost))
 
 	return postsHandler
 }
@@ -35,7 +36,6 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	slug := ctx.UserValue("slug").(string)
 	posts := make([]*models.Post, 0)
-
 	err := json.Unmarshal(ctx.PostBody(), &posts)
 	if err != nil {
 		fmt.Println(err)
@@ -45,7 +45,10 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
 	if err != nil {
 		fmt.Println(err)
-		ctx.SetStatusCode(http.StatusInternalServerError)
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: "Can't find post author by nickname: "}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
 		return
 	}
 	if posts == nil {
@@ -53,6 +56,11 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	}
 	ctx.SetStatusCode(http.StatusCreated)
 	body, err := json.Marshal(posts)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
 	ctx.SetBody(body)
 }
 
@@ -114,6 +122,40 @@ func (handler *PostsHandler) GetPostHandler(ctx *fasthttp.RequestCtx) {
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)
+	}
+	ctx.SetStatusCode(http.StatusOK)
+	ctx.SetBody(body)
+}
+
+func (handler *PostsHandler) UpdatePost(ctx *fasthttp.RequestCtx) {
+	postID, err := strconv.Atoi(ctx.UserValue("id").(string))
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	post := &models.Post{}
+	err = post.UnmarshalJSON(ctx.Request.Body())
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	post.ID = postID
+	post, err = handler.postUsecase.UpdatePost(post)
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusNotFound)
+		resp := responses.Response{Message: fmt.Sprintf("Can't find post with id: %d", postID)}
+		body, _ := resp.MarshalJSON()
+		ctx.SetBody(body)
+		return
+	}
+	body, err := post.MarshalJSON()
+	if err != nil {
+		fmt.Println(err)
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
 	}
 	ctx.SetStatusCode(http.StatusOK)
 	ctx.SetBody(body)

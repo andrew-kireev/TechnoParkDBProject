@@ -95,3 +95,15 @@ func (posUse *PostsUsecase) GetPost(posID int, relatedStrs []string) (*models.Po
 	}
 	return postResponse, err
 }
+
+func (postUse *PostsUsecase) UpdatePost(post *models.Post) (*models.Post, error) {
+	oldPost, err := postUse.postsRep.GetPost(post.ID)
+	if err != nil {
+		return nil, err
+	}
+	if oldPost.Message == post.Message {
+		return oldPost, nil
+	}
+	post, err = postUse.postsRep.UpdatePostByID(post)
+	return post, err
+}

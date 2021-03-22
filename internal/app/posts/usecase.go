@@ -6,4 +6,5 @@ type Usecase interface {
 	CreatePost(posts []*models.Post, slugOrInt string) ([]*models.Post, error)
 	GetPosts(sort, since, slugOrID string, limit int, desc bool) ([]*models.Post, error)
 	GetPost(postID int, relatedStrs []string) (*models.PostResponse, error)
+	UpdatePost(post *models.Post) (*models.Post, error)
 }

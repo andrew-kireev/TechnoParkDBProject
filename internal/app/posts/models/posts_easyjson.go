@@ -44,7 +44,7 @@ func easyjsonDc9e8747DecodeTechnoParkDBProjectInternalAppPostsModels(in *jlexer.
 			out.Author = string(in.String())
 		case "message":
 			out.Message = string(in.String())
-		case "idEdited":
+		case "isEdited":
 			out.IsEdited = bool(in.Bool())
 		case "forum":
 			out.Forum = string(in.String())
@@ -87,7 +87,7 @@ func easyjsonDc9e8747EncodeTechnoParkDBProjectInternalAppPostsModels(out *jwrite
 		out.String(string(in.Message))
 	}
 	{
-		const prefix string = ",\"idEdited\":"
+		const prefix string = ",\"isEdited\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.IsEdited))
 	}
