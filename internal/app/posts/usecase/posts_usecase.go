@@ -42,6 +42,15 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 			return nil, err
 		}
 	}
+	if len(posts) == 0 {
+		return posts, nil
+	}
+	if len(posts) != 0 {
+		_, err = postUsecase.userRep.GetUserByNickname(posts[0].Author)
+		if err != nil {
+			return nil, err
+		}
+	}
 	for _, post := range posts {
 		post.Thread = thread.ID
 		post.Forum = thread.Forum

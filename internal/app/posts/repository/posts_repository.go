@@ -22,9 +22,6 @@ func NewPostsRepository(conn *pgxpool.Pool) *PostsRepository {
 }
 
 func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post, error) {
-	if len(posts) == 0 {
-		return posts, nil
-	}
 	query := `INSERT INTO posts (parent, author, message, forum, thread)
 			VALUES `
 	for i, post := range posts {
@@ -35,7 +32,7 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 			post.Message, post.Forum, post.Thread)
 	}
 	query += " returning id, parent, author, message, is_edited, forum, thread, created"
-	fmt.Println(query)
+	//fmt.Println(query)
 	rows, err := postRep.Conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err

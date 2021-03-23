@@ -5,6 +5,7 @@ import (
 	threadModels "TechnoParkDBProject/internal/app/thread/models"
 	"TechnoParkDBProject/internal/app/vote"
 	"TechnoParkDBProject/internal/app/vote/models"
+	"github.com/jackc/pgconn"
 	"strconv"
 )
 
@@ -37,6 +38,9 @@ func (voteUsecase *VoteUsecase) CreateNewVote(vote *models.Vote, slugOrID string
 	vote.ThreadID = th.ID
 	err = voteUsecase.voteRep.CreateNewVote(vote)
 	if err != nil {
+		if err.(*pgconn.PgError).Code == "23503" {
+			return nil, err
+		}
 		linesUpdated, err := voteUsecase.voteRep.UpdateVote(vote)
 		if err != nil {
 			return nil, err
