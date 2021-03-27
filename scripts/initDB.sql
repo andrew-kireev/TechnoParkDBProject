@@ -172,8 +172,9 @@ CREATE TABLE IF NOT EXISTS votes
 
 create table if not exists users_to_forums
 (
-    nickname  citext not null references users (nickname),
-    forum citext not null references forum (slug)
+    nickname citext not null references users (nickname),
+    forum    citext not null references forum (slug),
+    unique (nickname, forum)
 );
 
 CREATE OR REPLACE FUNCTION insert_votes_threads()
@@ -262,7 +263,8 @@ CREATE OR REPLACE FUNCTION update_users_forum()
 $update_users_forum$
 BEGIN
     INSERT INTO users_to_forums (nickname, forum)
-    VALUES (NEW.author, NEW.forum);
+    VALUES (NEW.author, NEW.forum) ON CONFLICT DO NOTHING ;
+    RETURN NEW;
 END;
 $update_users_forum$ LANGUAGE plpgsql;
 

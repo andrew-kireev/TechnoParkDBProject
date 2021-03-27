@@ -8,5 +8,5 @@ import (
 type Repository interface {
 	CreateForum(forum *models.Forum) error
 	GetForumBySlug(slug string) (*models.Forum, error)
-	GetUsersByForum(forumSlug string) ([]*usersModels.User, error)
+	GetUsersByForum(formSlug, since string, limit int, desc bool) ([]*usersModels.User, error)
 }

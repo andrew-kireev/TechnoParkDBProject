@@ -30,6 +30,8 @@ func NewForumHandler(router *router.Router, forumUsecase forum.Usecase, userUsec
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.CreateForumHandler)))
 	forumHandler.router.GET("/api/forum/{forum_slug}/details",
 		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.GetForumHandler)))
+	forumHandler.router.GET("/api/forum/{forum_slug}/users",
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.GetUsersByForumHandler)))
 
 	return forumHandler
 }
@@ -121,7 +123,33 @@ func (handler *ForumHandler) GetForumHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func (handler *ForumHandler) GetUsersByForumHandler(ctx *fasthttp.RequestCtx) {
-	//forumSlug := ctx.UserValue("forum_slug").(string)
-	//desc := ctx.QueryArgs().Peek("desc")
-	//limit := ctx.QueryArgs().Peek("limit")
+	forumSlug := ctx.UserValue("forum_slug").(string)
+	desc := ctx.QueryArgs().GetBool("desc")
+	limit, err := ctx.QueryArgs().GetUint("limit")
+	if err != nil {
+		limit = 100
+	}
+	since := string(ctx.QueryArgs().Peek("since"))
+
+	users, err := handler.forumUsecase.GetUsersByForum(forumSlug, since, limit, desc)
+	if err != nil {
+		resp := &responses.Response{
+			Message: "Can't find users with forum slug " + forumSlug,
+		}
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
+			return
+		}
+		ctx.SetBody(body)
+		ctx.SetStatusCode(http.StatusNotFound)
+		return
+	}
+	body, err := json.Marshal(users)
+	if err != nil {
+		ctx.SetStatusCode(http.StatusInternalServerError)
+		return
+	}
+	ctx.SetBody(body)
+	ctx.SetStatusCode(http.StatusOK)
 }

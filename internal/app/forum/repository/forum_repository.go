@@ -43,12 +43,22 @@ func (forumRep *ForumRepository) GetForumBySlug(slug string) (*models.Forum, err
 	return forum, nil
 }
 
-func (forumRep *ForumRepository) GetUsersByForum(forumSlug string) ([]*usersModels.User, error) {
-	query := `select u.nickname, u.fullname, u.about, u.email from users_to_forums
+func (forumRep *ForumRepository) GetUsersByForum(forumSlug, since string, limit int, desc bool) ([]*usersModels.User, error) {
+	query := fmt.Sprintf(`select u.nickname, u.fullname, u.about, u.email from users_to_forums
 			left join users u on users_to_forums.nickname = u.nickname
-			where users_to_forums.forum =  $1`
-
-	rows, err := forumRep.Conn.Query(context.Background(), query, forumSlug)
+			where users_to_forums.forum = '%s'`, forumSlug)
+	if desc && since != "" {
+		query += fmt.Sprintf(` and u.nickname < '%s'`, since)
+	} else if since != "" {
+		query += fmt.Sprintf(` and u.nickname > '%s'`, since)
+	}
+	query +=  ` order by u.nickname `
+	if desc {
+		query += "desc"
+	}
+	query += fmt.Sprintf(` limit %d`, limit)
+	fmt.Println(query)
+	rows, err := forumRep.Conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
