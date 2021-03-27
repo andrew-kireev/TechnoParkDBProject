@@ -119,3 +119,9 @@ func (handler *ForumHandler) GetForumHandler(ctx *fasthttp.RequestCtx) {
 	ctx.SetBody(body)
 	ctx.SetStatusCode(http.StatusOK)
 }
+
+func (handler *ForumHandler) GetUsersByForumHandler(ctx *fasthttp.RequestCtx) {
+	//forumSlug := ctx.UserValue("forum_slug").(string)
+	//desc := ctx.QueryArgs().Peek("desc")
+	//limit := ctx.QueryArgs().Peek("limit")
+}

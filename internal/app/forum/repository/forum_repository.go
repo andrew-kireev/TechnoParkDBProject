@@ -2,7 +2,9 @@ package repository
 
 import (
 	"TechnoParkDBProject/internal/app/forum/models"
+	usersModels "TechnoParkDBProject/internal/app/user/models"
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -39,4 +41,27 @@ func (forumRep *ForumRepository) GetForumBySlug(slug string) (*models.Forum, err
 		return nil, err
 	}
 	return forum, nil
+}
+
+func (forumRep *ForumRepository) GetUsersByForum(forumSlug string) ([]*usersModels.User, error) {
+	query := `select u.nickname, u.fullname, u.about, u.email from users_to_forums
+			left join users u on users_to_forums.nickname = u.nickname
+			where users_to_forums.forum =  $1`
+
+	rows, err := forumRep.Conn.Query(context.Background(), query, forumSlug)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	users := make([]*usersModels.User, 0)
+
+	for rows.Next() {
+		user := &usersModels.User{}
+		err := rows.Scan(&user.Nickname, &user.FullName, &user.About, &user.Email)
+		if err != nil {
+			fmt.Println(err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
