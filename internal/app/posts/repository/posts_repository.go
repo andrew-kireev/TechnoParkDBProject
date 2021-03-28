@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"strconv"
 	"time"
 )
 
@@ -71,21 +72,23 @@ func (postRep *PostsRepository) FindForumByThreadID(threadID int) (*forumModels.
 }
 
 func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string, desc bool) ([]*models.Post, error) {
+	postID, _ := strconv.Atoi(since)
+
 	query := `SELECT id, parent, author, message, is_edited, forum, thread, created from posts
 			WHERE thread = $1`
 	if since != "" && desc {
-		query += " and created <= $2"
+		query += " and id < $2"
 	} else if since != "" && !desc {
-		query += " and created >= $2"
+		query += " and id > $2"
 	} else if since != "" {
-		query += " and created >= $2"
+		query += " and id > $2"
 	}
 	if desc {
 		query += " ORDER BY created desc"
 	} else if !desc {
-		query += " ORDER BY created asc"
+		query += " ORDER BY created asc, id"
 	} else {
-		query += " ORDER BY created"
+		query += " ORDER BY created, id"
 	}
 	query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
 
@@ -94,7 +97,7 @@ func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string
 	var rows pgx.Rows
 	var err error
 	if since != "" {
-		rows, err = postRep.Conn.Query(context.Background(), query, threadID, since)
+		rows, err = postRep.Conn.Query(context.Background(), query, threadID, postID)
 	} else {
 		rows, err = postRep.Conn.Query(context.Background(), query, threadID)
 	}
@@ -120,7 +123,8 @@ func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string
 
 func (postRep *PostsRepository) GetPost(postID int) (*models.Post, error) {
 	query := `SELECT id, parent, author, message, is_edited, forum, thread, created from posts
-			WHERE id = $1`
+			WHERE id = $1
+			order by created, id`
 
 	post := &models.Post{}
 	t := &time.Time{}
@@ -146,8 +150,6 @@ SET message   = (CASE
                      ELSE true END)
 WHERE id = $2
 returning id, parent, author, message, is_edited, forum, thread, created `
-
-	fmt.Println(query)
 
 	t := &time.Time{}
 	err := postRep.Conn.QueryRow(context.Background(), query, post.Message, post.ID).Scan(
