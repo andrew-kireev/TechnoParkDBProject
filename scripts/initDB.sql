@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS posts
     is_edited boolean                  default false,
     forum     citext    not null references forum (slug),
     thread    int       not null references threads (id),
-    created   timestamp with time zone default now()
+    created   timestamp with time zone default now(),
+    path      int[]                    default array []::int[]
 );
 
 CREATE TABLE IF NOT EXISTS votes
@@ -144,9 +145,18 @@ ORDER BY t.created asc
 LIMIT NULLIF(4, 0);
 
 
-SELECT t.id, t.title, t.author, t.forum, t.message, t.votes, t.slug, t.created from threads as t
-LEFT JOIN forum f on t.forum = f.slug
-WHERE f.slug = 'urJsg6V2PS-cr' and t.created >= '2020-08-18T16:46:40.418Z'
+SELECT t.id,
+       t.title,
+       t.author,
+       t.forum,
+       t.message,
+       t.votes,
+       t.slug,
+       t.created
+from threads as t
+         LEFT JOIN forum f on t.forum = f.slug
+WHERE f.slug = 'urJsg6V2PS-cr'
+  and t.created >= '2020-08-18T16:46:40.418Z'
 ORDER BY t.created asc
 LIMIT NULLIF(4, 0);
 
@@ -157,8 +167,9 @@ VALUES (0, 'cuiusque.ntO4uzL1nRz571', 'fdfds', 'SeeML50Rpk-Jr', 625),
 returning id, parent, author, message, is_edited, forum, thread, created;
 
 
-SELECT f.title, f.user_nickname, f.slug, f.posts, f.threads FROM forum as f
-left join threads t on f.slug = t.forum
+SELECT f.title, f.user_nickname, f.slug, f.posts, f.threads
+FROM forum as f
+         left join threads t on f.slug = t.forum
 where t.id = 1743;
 
 
@@ -215,7 +226,15 @@ CREATE TRIGGER update_votes_threads
     FOR EACH ROW
 EXECUTE PROCEDURE update_votes_threads();
 
-SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+SELECT id,
+       parent,
+       author,
+       message,
+       is_edited,
+       forum,
+       thread,
+       created
+from posts
 WHERE thread = 3471
 ORDER BY created, id asc
 LIMIT NULLIF(65, 0);
@@ -263,7 +282,8 @@ CREATE OR REPLACE FUNCTION update_users_forum()
 $update_users_forum$
 BEGIN
     INSERT INTO users_to_forums (nickname, forum)
-    VALUES (NEW.author, NEW.forum) ON CONFLICT DO NOTHING ;
+    VALUES (NEW.author, NEW.forum)
+    ON CONFLICT DO NOTHING;
     RETURN NEW;
 END;
 $update_users_forum$ LANGUAGE plpgsql;

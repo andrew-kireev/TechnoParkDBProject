@@ -11,4 +11,5 @@ type Repository interface {
 	GetPosts(limit, threadID int, sort, since string, desc bool) ([]*models.Post, error)
 	GetPost(postID int) (*models.Post, error)
 	UpdatePostByID(post *models.Post) (*models.Post, error)
+	CheckThreadID(parentID int) (int, error)
 }

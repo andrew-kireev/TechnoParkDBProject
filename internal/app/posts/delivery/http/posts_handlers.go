@@ -45,7 +45,11 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
 	if err != nil {
 		fmt.Println(err)
-		ctx.SetStatusCode(http.StatusNotFound)
+		if err.Error() == "g" {
+			ctx.SetStatusCode(http.StatusConflict)
+		} else {
+			ctx.SetStatusCode(http.StatusNotFound)
+		}
 		resp := responses.Response{Message: "Can't find post author by nickname: "}
 		body, _ := resp.MarshalJSON()
 		ctx.SetBody(body)
@@ -73,7 +77,6 @@ func (postHandler *PostsHandler) GetPosts(ctx *fasthttp.RequestCtx) {
 	}
 	sort := string(ctx.QueryArgs().Peek("sort"))
 	desc := ctx.QueryArgs().GetBool("desc")
-	fmt.Println(slugOrID, since, limit, sort, desc)
 	posts, err := postHandler.postUsecase.GetPosts(sort, since, slugOrID, limit, desc)
 	if err != nil {
 		fmt.Println(err)
@@ -96,7 +99,6 @@ func (handler *PostsHandler) GetPostHandler(ctx *fasthttp.RequestCtx) {
 	postID, err := strconv.Atoi(ctx.UserValue("id").(string))
 
 	relatedArr := string(ctx.QueryArgs().Peek("related"))
-	fmt.Println(relatedArr)
 	relatedStrs := strings.Split(relatedArr, ",")
 	for len(relatedStrs) < 3 {
 		relatedStrs = append(relatedStrs, "")

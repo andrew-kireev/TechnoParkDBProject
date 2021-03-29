@@ -8,6 +8,8 @@ import (
 	threadModels "TechnoParkDBProject/internal/app/thread/models"
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/pkg/utils"
+	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -53,6 +55,15 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 	}
 	for _, post := range posts {
 		post.Thread = thread.ID
+		if post.Parent != 0 {
+			parentThreadID, err := postUsecase.postsRep.CheckThreadID(post.Parent)
+			if err != nil {
+				return nil, errors.New("g")
+			}
+			if parentThreadID != post.Thread {
+				return nil, errors.New("g")
+			}
+		}
 		post.Forum = thread.Forum
 	}
 	posts, err = postUsecase.postsRep.CreatePost(posts)
@@ -62,13 +73,19 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 func (postUsecase *PostsUsecase) GetPosts(sort, since, slugOrID string, limit int, desc bool) ([]*models.Post, error) {
 	threadID, err := strconv.Atoi(slugOrID)
 	thread := &threadModels.Thread{}
+	if sort == "parent_tree" {
+		fmt.Println("ura")
+	}
 	if err != nil {
 		thread, err = postUsecase.threadRep.FindThreadBySlug(slugOrID)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		thread.ID = threadID
+		thread, err = postUsecase.threadRep.FindThreadByID(threadID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	posts, err := postUsecase.postsRep.GetPosts(limit, thread.ID, sort, since, desc)
