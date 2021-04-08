@@ -44,7 +44,6 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 	}
 	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
 	if err != nil {
-		fmt.Println(err)
 		if err.Error() == "g" {
 			ctx.SetStatusCode(http.StatusConflict)
 		} else {
@@ -103,7 +102,6 @@ func (handler *PostsHandler) GetPostHandler(ctx *fasthttp.RequestCtx) {
 	for len(relatedStrs) < 3 {
 		relatedStrs = append(relatedStrs, "")
 	}
-	fmt.Println(relatedStrs)
 	if err != nil {
 		fmt.Println(err)
 		ctx.SetStatusCode(http.StatusInternalServerError)

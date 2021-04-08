@@ -5,7 +5,6 @@ import (
 	"TechnoParkDBProject/internal/app/vote"
 	"TechnoParkDBProject/internal/app/vote/models"
 	"TechnoParkDBProject/internal/pkg/responses"
-	"fmt"
 	"github.com/fasthttp/router"
 	"github.com/valyala/fasthttp"
 	"net/http"
@@ -47,7 +46,6 @@ func (handler *VoteHandler) CreateVote(ctx *fasthttp.RequestCtx) {
 	}
 	body, err := thread.MarshalJSON()
 	if err != nil {
-		fmt.Println(body)
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}

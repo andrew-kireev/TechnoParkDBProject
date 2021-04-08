@@ -76,7 +76,6 @@ func (handler *ForumHandler) CreateForumHandler(ctx *fasthttp.RequestCtx) {
 			ctx.SetStatusCode(http.StatusNotFound)
 			return
 		}
-		fmt.Println(err)
 		body, err := alredyExictedForum.MarshalJSON()
 		if err != nil {
 			fmt.Println(err)

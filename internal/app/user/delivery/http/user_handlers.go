@@ -107,7 +107,6 @@ func (handler *UserHandler) UpdateUserHandler(ctx *fasthttp.RequestCtx) {
 		fmt.Println(err)
 	}
 	newUser.Nickname = nickname
-	fmt.Println(newUser)
 
 	us, err := handler.userUsecase.GetUserByEmail(newUser.Email)
 	if err == nil && us.Nickname != newUser.Nickname {

@@ -9,7 +9,6 @@ import (
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/pkg/utils"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -73,9 +72,6 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 func (postUsecase *PostsUsecase) GetPosts(sort, since, slugOrID string, limit int, desc bool) ([]*models.Post, error) {
 	threadID, err := strconv.Atoi(slugOrID)
 	thread := &threadModels.Thread{}
-	if sort == "parent_tree" {
-		fmt.Println("ura")
-	}
 	if err != nil {
 		thread, err = postUsecase.threadRep.FindThreadBySlug(slugOrID)
 		if err != nil {

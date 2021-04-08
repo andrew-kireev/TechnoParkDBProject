@@ -58,7 +58,6 @@ func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post
 		post.Created = strfmt.DateTime(t.UTC()).String()
 		newPosts = append(newPosts, post)
 	}
-
 	return newPosts, nil
 }
 
@@ -88,7 +87,6 @@ func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string
 	} else if sort == "parent_tree" {
 		query = FormQuerySortParentTree(limit, threadID, postID, sort, since, desc)
 	}
-	fmt.Println(sort)
 	if sort != "parent_tree" {
 		query += fmt.Sprintf(" LIMIT NULLIF(%d, 0)", limit)
 	}

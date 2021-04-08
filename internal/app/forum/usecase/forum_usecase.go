@@ -36,4 +36,3 @@ func (forumUse *ForumUsecase) GetUsersByForum(formSlug, since string, limit int,
 	}
 	return users, err
 }
-

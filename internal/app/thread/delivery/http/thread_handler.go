@@ -49,7 +49,6 @@ func (handler *ThreadHandler) CreateThread(ctx *fasthttp.RequestCtx) {
 	if err == nil && oldThread.Slug != "" {
 		body, err := oldThread.MarshalJSON()
 		if err != nil {
-			fmt.Println(body)
 			ctx.SetStatusCode(http.StatusInternalServerError)
 			return
 		}
@@ -84,7 +83,6 @@ func (handler *ThreadHandler) CreateThread(ctx *fasthttp.RequestCtx) {
 	}
 	body, err := thread.MarshalJSON()
 	if err != nil {
-		fmt.Println(body)
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}

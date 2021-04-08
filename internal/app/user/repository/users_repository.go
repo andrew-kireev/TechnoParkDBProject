@@ -78,9 +78,8 @@ SET fullname = (CASE
     END)
 where nickname = $4`
 
-	res, err := userRep.Conn.Exec(context.Background(), query, user.FullName,
+	_, err := userRep.Conn.Exec(context.Background(), query, user.FullName,
 		user.About, user.Email, user.Nickname)
-	fmt.Println(res)
 
 	if err != nil {
 		return err

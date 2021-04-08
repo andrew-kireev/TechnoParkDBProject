@@ -57,7 +57,6 @@ func (forumRep *ForumRepository) GetUsersByForum(forumSlug, since string, limit 
 		query += "desc"
 	}
 	query += fmt.Sprintf(` limit %d`, limit)
-	fmt.Println(query)
 	rows, err := forumRep.Conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
