@@ -209,3 +209,9 @@ CREATE TRIGGER path_tri
     FOR EACH ROW
 EXECUTE PROCEDURE path();
 
+-- create index if not exists post_thread_id on posts (thread);
+-- create index if not exists  thread_slug on threads (slug);
+-- create index if not exists post_pathparent on posts ((path[1]));
+-- create index if not exists posts_thread_path on posts (thread, path);
+-- create index if not exists posts_created_id on posts (created, id);
+

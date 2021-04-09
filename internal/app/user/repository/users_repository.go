@@ -102,12 +102,12 @@ func (userRep *UserRepository) GetUserByEmail(email string) (*models.User, error
 }
 
 func (userRep *UserRepository) DeleteAll() error {
-	query := `DELETE FROM users_to_forums;
-			DELETE FROM votes;
-			DELETE FROM posts;
-			DELETE FROM threads;
-			DELETE FROM forum;
-			DELETE FROM users;`
+	query := `TRUNCATE TABLE users_to_forums CASCADE;
+			TRUNCATE TABLE votes CASCADE;
+			TRUNCATE TABLE posts CASCADE;
+			TRUNCATE TABLE threads CASCADE;
+			TRUNCATE TABLE forum CASCADE;
+			TRUNCATE TABLE users CASCADE;`
 
 	_, err := userRep.Conn.Exec(context.Background(), query)
 	if err != nil {
