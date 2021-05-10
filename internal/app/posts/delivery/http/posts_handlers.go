@@ -25,7 +25,8 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 		postUsecase: usecase,
 	}
 
-	postsHandler.router.POST("/api/thread/{slug}/create", middlware.ContentTypeJson(postsHandler.CreatePost))
+	postsHandler.router.POST("/api/thread/{slug}/create",
+		middlware.LoggingMiddleware(middlware.ContentTypeJson(postsHandler.CreatePost)))
 	postsHandler.router.GET("/api/thread/{slug_or_id}/posts", middlware.ContentTypeJson(postsHandler.GetPosts))
 	postsHandler.router.GET("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.GetPostHandler))
 	postsHandler.router.POST("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.UpdatePost))
@@ -42,6 +43,7 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}
+	//fmt.Println(posts)
 	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
 	if err != nil {
 		if err.Error() == "g" {
@@ -54,9 +56,10 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 		ctx.SetBody(body)
 		return
 	}
-	if posts == nil {
-		return
-	}
+	fmt.Println("fsdfds")
+	//if posts == nil {
+	//	return
+	//}
 	ctx.SetStatusCode(http.StatusCreated)
 	body, err := json.Marshal(posts)
 	if err != nil {

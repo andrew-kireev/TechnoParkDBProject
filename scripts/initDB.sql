@@ -1,25 +1,25 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 
-CREATE TABLE IF NOT EXISTS users
+CREATE UNLOGGED TABLE IF NOT EXISTS users
 (
     id       bigserial,
-    nickname citext       NOT NULL primary key,
-    fullname varchar(100) NOT NULL,
+    nickname citext NOT NULL primary key,
+    fullname text   NOT NULL,
     about    text,
-    email    citext       NOT NULL unique
+    email    citext NOT NULL unique
 );
 
-CREATE TABLE IF NOT EXISTS forum
+CREATE UNLOGGED TABLE IF NOT EXISTS forum
 (
     title         text   NOT NULL,
     user_nickname citext NOT NULL REFERENCES users (nickname),
     slug          citext NOT NULL PRIMARY KEY,
-    posts         bigint,
-    threads       int
+    posts         bigint default 0,
+    threads       int    default 0
 );
 
 
-CREATE TABLE IF NOT EXISTS threads
+CREATE UNLOGGED TABLE IF NOT EXISTS threads
 (
     id      bigserial not null primary key,
     title   text      not null,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS threads
     created timestamp with time zone default now()
 );
 
-create table posts
+create unlogged table posts
 (
     id        bigserial not null
         constraint posts_pkey
@@ -52,20 +52,7 @@ create table posts
     path      bigint[]                 default ARRAY []::integer[]
 );
 
--- CREATE TABLE IF NOT EXISTS posts
--- (
---     id        bigserial not null primary key,
---     parent    int                      default 0,
---     author    citext    not null references users (nickname),
---     message   text      not null,
---     is_edited boolean                  default false,
---     forum     citext    not null references forum (slug),
---     thread    int       not null references threads (id),
---     created   timestamp with time zone default now(),
---     path      bigint[]                    default array []::int[]
--- );
-
-CREATE TABLE IF NOT EXISTS votes
+CREATE UNLOGGED TABLE IF NOT EXISTS votes
 (
     nickname  citext not null references users (nickname),
     thread_id int    not null references threads (id),
@@ -73,7 +60,7 @@ CREATE TABLE IF NOT EXISTS votes
     unique (nickname, thread_id)
 );
 
-create table if not exists users_to_forums
+create unlogged table if not exists users_to_forums
 (
     nickname citext not null references users (nickname),
     forum    citext not null references forum (slug),

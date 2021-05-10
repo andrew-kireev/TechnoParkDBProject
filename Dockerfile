@@ -5,6 +5,7 @@ WORKDIR /app
 RUN go build ./cmd/main/main.go
 
 FROM ubuntu:20.04
+
 RUN apt-get -y update && apt-get install -y tzdata
 ENV TZ=Russia/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -15,8 +16,9 @@ USER postgres
 
 RUN /etc/init.d/postgresql start &&\
     psql --command "CREATE USER andrewkireev WITH SUPERUSER PASSWORD 'password';" &&\
-    createdb db_forum &&\
+    createdb -O andrewkireev db_forum &&\
     /etc/init.d/postgresql stop
+
 
 EXPOSE 5432
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
