@@ -9,6 +9,7 @@ import (
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/pkg/utils"
 	"errors"
+	"fmt"
 	"strconv"
 )
 
@@ -33,13 +34,16 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 	threadID, err := strconv.Atoi(slugOrInt)
 	thread := &threadModels.Thread{}
 	if err != nil {
+		fmt.Println("Ошибка 37 строчка")
 		thread, err = postUsecase.threadRep.FindThreadBySlug(slugOrInt)
 		if err != nil {
+			fmt.Println("Ошибка 39 строчка")
 			return nil, err
 		}
 	} else {
 		thread, err = postUsecase.threadRep.FindThreadByID(threadID)
 		if err != nil {
+			fmt.Println("Ошибка 44 строчка")
 			return nil, err
 		}
 	}
@@ -49,6 +53,7 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 	if len(posts) != 0 {
 		_, err = postUsecase.userRep.GetUserByNickname(posts[0].Author)
 		if err != nil {
+			fmt.Println("Ошибка 53 строчка")
 			return nil, err
 		}
 	}
@@ -57,6 +62,7 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 		if post.Parent != 0 {
 			parentThreadID, err := postUsecase.postsRep.CheckThreadID(post.Parent)
 			if err != nil {
+				fmt.Println("Ошибка 61 строчка")
 				return nil, errors.New("g")
 			}
 			if parentThreadID != post.Thread {
@@ -66,6 +72,9 @@ func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt stri
 		post.Forum = thread.Forum
 	}
 	posts, err = postUsecase.postsRep.CreatePost(posts)
+	if err != nil {
+		fmt.Println("Ошибка 76 строчка")
+	}
 	return posts, err
 }
 

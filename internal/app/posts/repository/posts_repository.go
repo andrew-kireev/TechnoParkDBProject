@@ -26,6 +26,9 @@ func NewPostsRepository(conn *pgxpool.Pool) *PostsRepository {
 func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post, error) {
 	query := `INSERT INTO posts (parent, author, message, forum, thread)
 			VALUES `
+	if len(posts) == 0 {
+		return []*models.Post{}, nil
+	}
 	for i, post := range posts {
 		if i != 0 {
 			query += ", "

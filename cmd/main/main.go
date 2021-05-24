@@ -32,7 +32,7 @@ func main() {
 	// "host=localhost port=5432 dbname=db_project sslmode=disable"
 	// host=localhost port=5432 user=andrewkireev dbname=db_forum password=password sslmode=disable
 	dbpool, err := pgxpool.Connect(context.Background(),
-		"host=localhost port=5432 user=andrewkireev dbname=db_forum password=password sslmode=disable",
+		"host=localhost port=5432 dbname=db_project sslmode=disable",
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)

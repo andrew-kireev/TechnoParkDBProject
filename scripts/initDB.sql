@@ -33,21 +33,13 @@ CREATE UNLOGGED TABLE IF NOT EXISTS threads
 
 create unlogged table posts
 (
-    id        bigserial not null
-        constraint posts_pkey
-            primary key,
+    id        bigserial constraint posts_pkey primary key,
     parent    integer                  default 0,
-    author    citext    not null
-        constraint posts_author_fkey
-            references users,
+    author    citext    not null constraint posts_author_fkey references users,
     message   text      not null,
     is_edited boolean                  default false,
-    forum     citext    not null
-        constraint posts_forum_fkey
-            references forum,
-    thread    integer   not null
-        constraint posts_thread_fkey
-            references threads,
+    forum     citext   constraint posts_forum_fkey references forum,
+    thread    integer    constraint posts_thread_fkey references threads,
     created   timestamp with time zone default now(),
     path      bigint[]                 default ARRAY []::integer[]
 );

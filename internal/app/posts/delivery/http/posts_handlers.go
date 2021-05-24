@@ -52,7 +52,11 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 			ctx.SetStatusCode(http.StatusNotFound)
 		}
 		resp := responses.Response{Message: "Can't find post author by nickname: "}
-		body, _ := resp.MarshalJSON()
+		body, err := resp.MarshalJSON()
+		if err != nil {
+			fmt.Println("Ошибка 657строчка")
+			return
+		}
 		ctx.SetBody(body)
 		return
 	}
