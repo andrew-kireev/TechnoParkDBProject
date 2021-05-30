@@ -188,5 +188,5 @@ create index if not exists posts_created_id on posts (created, id);
 create index if not exists users_nickname on users using hash (nickname);
 create index if not exists users_email on users using hash (email);
 create index if not exists posts_path_id on posts (path, id);
-create index if not exists posts_parent_path_id on posts ((path[1]), id);
+-- create index if not exists posts_parent_path_id on posts ((path[1]), id);
 
