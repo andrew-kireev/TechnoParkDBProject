@@ -9,7 +9,6 @@ import (
 	"TechnoParkDBProject/internal/app/user"
 	"TechnoParkDBProject/internal/pkg/utils"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -31,50 +30,30 @@ func NewPostsUsecase(postsRep posts.Repository, threadRep thread.Repository,
 }
 
 func (postUsecase *PostsUsecase) CreatePost(posts []*models.Post, slugOrInt string) ([]*models.Post, error) {
+	var thread *threadModels.Thread
 	threadID, err := strconv.Atoi(slugOrInt)
-	thread := &threadModels.Thread{}
 	if err != nil {
-		fmt.Println("Ошибка 37 строчка")
 		thread, err = postUsecase.threadRep.FindThreadBySlug(slugOrInt)
 		if err != nil {
-			fmt.Println("Ошибка 39 строчка")
-			return nil, err
+			return nil, errors.New("no thread")
 		}
 	} else {
 		thread, err = postUsecase.threadRep.FindThreadByID(threadID)
 		if err != nil {
-			fmt.Println("Ошибка 44 строчка")
-			return nil, err
+			return nil, errors.New("no thread")
 		}
 	}
+
 	if len(posts) == 0 {
-		return posts, nil
+		return nil, errors.New("no posts")
 	}
-	if len(posts) != 0 {
-		_, err = postUsecase.userRep.GetUserByNickname(posts[0].Author)
-		if err != nil {
-			fmt.Println("Ошибка 53 строчка")
-			return nil, err
-		}
-	}
-	for _, post := range posts {
-		post.Thread = thread.ID
-		if post.Parent != 0 {
-			parentThreadID, err := postUsecase.postsRep.CheckThreadID(post.Parent)
-			if err != nil {
-				fmt.Println("Ошибка 61 строчка")
-				return nil, errors.New("g")
-			}
-			if parentThreadID != post.Thread {
-				return nil, errors.New("g")
-			}
-		}
-		post.Forum = thread.Forum
-	}
-	posts, err = postUsecase.postsRep.CreatePost(posts)
+	_, err = postUsecase.userRep.GetUserByNickname(posts[0].Author)
 	if err != nil {
-		fmt.Println("Ошибка 76 строчка")
+		return nil, errors.New("no user")
 	}
+
+	posts, err = postUsecase.postsRep.CreatePost(posts, thread.Forum, thread.ID)
+
 	return posts, err
 }
 

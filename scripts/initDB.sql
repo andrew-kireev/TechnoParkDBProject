@@ -33,13 +33,17 @@ CREATE UNLOGGED TABLE IF NOT EXISTS threads
 
 create unlogged table posts
 (
-    id        bigserial constraint posts_pkey primary key,
+    id        bigserial
+        constraint posts_pkey primary key,
     parent    integer                  default 0,
-    author    citext    not null constraint posts_author_fkey references users,
-    message   text      not null,
+    author    citext not null
+        constraint posts_author_fkey references users,
+    message   text   not null,
     is_edited boolean                  default false,
-    forum     citext   constraint posts_forum_fkey references forum,
-    thread    integer    constraint posts_thread_fkey references threads,
+    forum     citext
+        constraint posts_forum_fkey references forum,
+    thread    integer
+        constraint posts_thread_fkey references threads,
     created   timestamp with time zone default now(),
     path      bigint[]                 default ARRAY []::integer[]
 );
@@ -162,31 +166,18 @@ EXECUTE PROCEDURE update_users_forum();
 
 CREATE OR REPLACE FUNCTION path() RETURNS TRIGGER AS
 $path$
-DECLARE
-    path_tmp     BIGINT[];
-    first_parent posts;
 BEGIN
-    IF (NEW.parent IS NULL) THEN
-        NEW.path := array_append(new.path, new.id);
-    ELSE
-        SELECT path FROM posts WHERE id = new.parent INTO path_tmp;
-        SELECT * FROM posts WHERE id = path_tmp[1] INTO first_parent;
-        IF NOT FOUND OR first_parent.thread != NEW.thread THEN
-            RAISE EXCEPTION 'error' USING ERRCODE = '00409';
-        end if;
-
-        NEW.path := NEW.path || path_tmp || new.id;
-    end if;
+    new.path = (SELECT path FROM posts WHERE id = new.parent) || new.id;
     RETURN new;
-end
+END;
 $path$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS path_tri ON posts;
 CREATE TRIGGER path_tri
     BEFORE INSERT
     ON posts
     FOR EACH ROW
 EXECUTE PROCEDURE path();
+
 
 -- create index if not exists post_thread_id on posts (thread);
 -- create index if not exists  thread_slug on threads (slug);

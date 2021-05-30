@@ -43,27 +43,43 @@ func (postHandler *PostsHandler) CreatePost(ctx *fasthttp.RequestCtx) {
 		ctx.SetStatusCode(http.StatusInternalServerError)
 		return
 	}
-	//fmt.Println(posts)
+
 	posts, err = postHandler.postUsecase.CreatePost(posts, slug)
+
 	if err != nil {
-		if err.Error() == "g" {
-			ctx.SetStatusCode(http.StatusConflict)
-		} else {
+		switch {
+		case err.Error() == "no user":
+			fmt.Println(err)
 			ctx.SetStatusCode(http.StatusNotFound)
-		}
-		resp := responses.Response{Message: "Can't find post author by nickname: "}
-		body, err := resp.MarshalJSON()
-		if err != nil {
-			fmt.Println("Ошибка 657строчка")
+			resp := responses.Response{Message: "Can't find user"}
+			body, _ := resp.MarshalJSON()
+			ctx.SetBody(body)
+			return
+		case err.Error() == "no thread":
+			fmt.Println(err)
+			ctx.SetStatusCode(http.StatusNotFound)
+			resp := responses.Response{Message: "Can't find thread or forum"}
+			body, _ := resp.MarshalJSON()
+			ctx.SetBody(body)
+			return
+		case err.Error() == "no posts":
+			fmt.Println(err)
+			ctx.SetStatusCode(http.StatusCreated)
+			emptyPosts := make([]*models.Post, 0)
+			body, _ := json.Marshal(emptyPosts)
+			ctx.SetBody(body)
+			return
+		default:
+			fmt.Println(err)
+			ctx.SetStatusCode(http.StatusConflict)
+			resp := responses.Response{Message: "Parent post was created in another thread"}
+			body, _ := resp.MarshalJSON()
+			ctx.SetBody(body)
 			return
 		}
-		ctx.SetBody(body)
-		return
 	}
+
 	fmt.Println("fsdfds")
-	//if posts == nil {
-	//	return
-	//}
 	ctx.SetStatusCode(http.StatusCreated)
 	body, err := json.Marshal(posts)
 	if err != nil {

@@ -23,45 +23,52 @@ func NewPostsRepository(conn *pgxpool.Pool) *PostsRepository {
 	}
 }
 
-func (postRep *PostsRepository) CreatePost(posts []*models.Post) ([]*models.Post, error) {
-	query := `INSERT INTO posts (parent, author, message, forum, thread)
-			VALUES `
-	if len(posts) == 0 {
-		return []*models.Post{}, nil
+func (postRep *PostsRepository) CreatePost(posts []*models.Post, forum string, threadID int) ([]*models.Post, error) {
+	if posts[0].Parent != 0 {
+		pThread, err := postRep.CheckThreadID(posts[0].Parent)
+		if err != nil {
+			return nil, fmt.Errorf("some error")
+		}
+
+		if pThread != threadID {
+			return nil, fmt.Errorf("some error")
+		}
 	}
+
+	query := `INSERT INTO posts(author, created, forum, message, parent, thread) VALUES `
+	var args []interface{} //nolint:prealloc
+	created := strfmt.DateTime(time.Now())
+
 	for i, post := range posts {
-		if i != 0 {
-			query += ", "
-		}
-		query += fmt.Sprintf("(NULLIF(%d, 0), '%s', '%s', '%s', %d)", post.Parent, post.Author,
-			post.Message, post.Forum, post.Thread)
+		posts[i].Forum = forum
+		posts[i].Thread = threadID
+		posts[i].Created = created.String()
+
+		query += fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d),",
+			i*6+1, i*6+2, i*6+3, i*6+4, i*6+5, i*6+6,
+		)
+
+		args = append(args, post.Author, created, forum, post.Message, post.Parent, threadID)
 	}
-	query += " returning id, parent, author, message, is_edited, forum, thread, created"
-	rows, err := postRep.Conn.Query(context.Background(), query)
+	query = query[:len(query)-1]
+	query += ` RETURNING id`
+
+	rows, err := postRep.Conn.Query(context.Background(), query, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error while inserting posts: %w", err)
 	}
-	newPosts := make([]*models.Post, 0)
-	var parent sql.NullInt64
 	defer rows.Close()
+
+	var idx int
 	for rows.Next() {
-		t := &time.Time{}
-		post := &models.Post{}
-		err = rows.Scan(&post.ID, &parent, &post.Author, &post.Message,
-			&post.IsEdited, &post.Forum, &post.Thread, t)
+		err = rows.Scan(&posts[idx].ID)
 		if err != nil {
-			fmt.Println(err)
+			return nil, fmt.Errorf("error while scanning %w", err)
 		}
-		if parent.Valid {
-			post.Parent = int(parent.Int64)
-		}
-		if err != nil {
-			return nil, err
-		}
-		post.Created = strfmt.DateTime(t.UTC()).String()
-		newPosts = append(newPosts, post)
+
+		idx++
 	}
-	return newPosts, nil
+	return posts, nil
 }
 
 func (postRep *PostsRepository) FindForumByThreadID(threadID int) (*forumModels.Forum, error) {
@@ -98,7 +105,7 @@ func (postRep *PostsRepository) GetPosts(limit, threadID int, sort, since string
 	if sort == "tree" {
 		rows, err = postRep.Conn.Query(context.Background(), query, threadID)
 	} else if sort == "parent_tree" {
-		rows, err = postRep.Conn.Query(context.Background(), query, threadID)
+		rows, err = postRep.Conn.Query(context.Background(), query)
 	} else if since != "" {
 		rows, err = postRep.Conn.Query(context.Background(), query, threadID, postID)
 	} else {
@@ -172,27 +179,31 @@ func FormQuerySortTree(limit, threadID, ID int, sort, since string, desc bool) s
 }
 
 func FormQuerySortParentTree(limit, threadID, ID int, sort, since string, desc bool) string {
-	subQuery := ""
-	query := `select id, parent, author, message, is_edited, forum, thread,
-				created FROM posts WHERE path[1] IN `
-	if since != "" {
+	var query string
+	if since == "" {
 		if desc {
-			subQuery = `and path[1] < `
+			query = fmt.Sprintf(`SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+				WHERE path[1] IN (SELECT id FROM posts WHERE thread = %d AND parent = 0 ORDER BY id DESC LIMIT %d)
+				ORDER BY path[1] DESC, path, id;`, threadID, limit)
 		} else {
-			subQuery = `and path[1] > `
+			query = fmt.Sprintf(`SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+				WHERE path[1] IN (SELECT id FROM posts WHERE thread = %d AND parent = 0 ORDER BY id LIMIT %d)
+				ORDER BY path, id;`, threadID, limit)
 		}
-		subQuery += fmt.Sprintf(`(select path[1] from posts where id = %d)`, ID)
-	}
-	subQuery = `select id FROM posts WHERE thread = $1 and parent is null ` + subQuery
-	if desc {
-		subQuery += `order by id desc`
-		subQuery += fmt.Sprintf(` LIMIT NULLIF(%d, 0)`, limit)
-		query += fmt.Sprintf(`(%s) ORDER BY path[1] DESC, path, id`, subQuery)
 	} else {
-		subQuery += `order by id asc`
-		subQuery += fmt.Sprintf(` LIMIT NULLIF(%d, 0)`, limit)
-		query += fmt.Sprintf(`(%s) order by path, id`, subQuery)
+		if desc {
+			query = fmt.Sprintf(`SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+				WHERE path[1] IN (SELECT id FROM posts WHERE thread = %d AND parent = 0 AND path[1] <
+				(SELECT path[1] FROM posts WHERE id = %s) ORDER BY id DESC LIMIT %d) ORDER BY path[1] DESC, path, id;`,
+				threadID, since, limit)
+		} else {
+			query = fmt.Sprintf(`SELECT id, parent, author, message, is_edited, forum, thread, created from posts
+				WHERE path[1] IN (SELECT id FROM posts WHERE thread = %d AND parent = 0 AND path[1] >
+				(SELECT path[1] FROM posts WHERE id = %s) ORDER BY id ASC LIMIT %d) ORDER BY path, id;`,
+				threadID, since, limit)
+		}
 	}
+
 	return query
 }
 
