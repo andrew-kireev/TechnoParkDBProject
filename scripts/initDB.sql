@@ -180,8 +180,13 @@ EXECUTE PROCEDURE path();
 
 
 create index if not exists post_thread_id on posts (thread);
-create index if not exists  thread_slug on threads (slug);
+create index if not exists thread_slug on threads using hash (slug);
+create index if not exists thread_id on threads (id);
 create index if not exists post_pathparent on posts ((path[1]));
 create index if not exists posts_thread_path on posts (thread, path);
 create index if not exists posts_created_id on posts (created, id);
+create index if not exists users_nickname on users using hash (nickname);
+create index if not exists users_email on users using hash (email);
+create index if not exists posts_path_id on posts (path, id);
+create index if not exists posts_parent_path_id on posts ((path[1]), id);
 
