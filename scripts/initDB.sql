@@ -192,6 +192,7 @@ create index if not exists posts_created_id on posts (created, id);
 create index if not exists posts_path_id on posts (id, path);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 create index if not exists post_thread on posts (thread);
+create index if not exists post_full on posts (id, parent, author, message, is_edited, forum, thread, created);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
 create index if not exists users_email_hash on users using hash (email);
