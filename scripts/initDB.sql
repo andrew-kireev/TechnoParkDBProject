@@ -187,9 +187,6 @@ create index if not exists thread_user on threads using hash (author);
 create index if not exists post_pathparent on posts ((path[1]));
 create index if not exists posts_forum on posts using hash (forum);
 create index if not exists posts_author on posts using hash (author);
-create index if not exists posts_thread_path on posts (thread, path);
-create index if not exists posts_created_id on posts (created, id);
-create index if not exists posts_path_id on posts (id, path);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 create index if not exists post_thread on posts (thread);
 
