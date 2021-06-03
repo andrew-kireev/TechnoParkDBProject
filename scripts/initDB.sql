@@ -189,7 +189,8 @@ create index if not exists posts_forum on posts using hash (forum);
 create index if not exists posts_author on posts using hash (author);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 create index if not exists post_thread on posts (thread);
-create index if not exists posts_sorting on posts ((path[1]) desc, path, id);
+create index if not exists posts_sorting_desc on posts ((path[1]) desc, path, id);
+create index if not exists posts_sorting on posts ((path[1]), path, id);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
