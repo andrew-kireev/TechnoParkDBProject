@@ -190,7 +190,7 @@ create index if not exists posts_author on posts using hash (author);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 create index if not exists posts_sorting on posts ((path[1]) desc, path, id);
 create index if not exists post_thread on posts (thread);
-create index if not exists post_gin on posts using gin (path);
+create index if not exists post_gin on posts (path);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
