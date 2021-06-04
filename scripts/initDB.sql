@@ -178,28 +178,28 @@ CREATE TRIGGER path_tri
     FOR EACH ROW
 EXECUTE PROCEDURE path();
 
--- убрал using hash
-create index if not exists thread_slug_hash on threads (slug);
+
+create index if not exists thread_slug_hash on threads using hash (slug);
 create index if not exists thread_forum_created on threads (forum, created);
-create index if not exists thread_forum on threads (forum);
-create index if not exists thread_user on threads (author);
+create index if not exists thread_forum on threads using hash (forum);
+create index if not exists thread_user on threads using hash (author);
 
 create index if not exists post_pathparent on posts ((path[1]));
-create index if not exists posts_forum on posts (forum);
-create index if not exists posts_author on posts (author);
+create index if not exists posts_forum on posts using hash (forum);
+create index if not exists posts_author on posts using hash (author);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 create index if not exists posts_sorting on posts ((path[1]) desc, path, id);
 create index if not exists post_thread on posts (thread);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 
-create index if not exists users_nickname_hash on users (nickname);
-create index if not exists users_email_hash on users (email);
+create index if not exists users_nickname_hash on users using hash (nickname);
+create index if not exists users_email_hash on users using hash (email);
 create index if not exists users_full on users(nickname, fullname, about, email);
 
 create index if not exists votes on votes (nickname, thread_id, voice);
 
-create index if not exists forum_slug on forum (slug);
-create index if not exists forum_user on forum (user_nickname);
+create index if not exists forum_slug on forum using hash (slug);
+create index if not exists forum_user on forum using hash (user_nickname);
 
 create index if not exists f_u_nickname ON users_to_forums (nickname);
 create index if not exists users_to_forums_forum_nickname ON users_to_forums (forum, nickname);
