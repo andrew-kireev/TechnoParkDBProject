@@ -205,8 +205,9 @@ create index if not exists votes on votes (nickname, thread_id, voice);
 create index if not exists forum_slug on forum using hash (slug);
 create index if not exists forum_user on forum using hash (user_nickname);
 
-create index if not exists f_u_nickname ON users_to_forums (nickname);
+create index if not exists f_u_nickname ON users_to_forums using hash (nickname);
 create index if not exists users_to_forums_forum_nickname ON users_to_forums (forum, nickname);
+create index if not exists users_to_forums_forum ON users_to_forums (forum);
 
 
 
