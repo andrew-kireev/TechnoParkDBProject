@@ -29,7 +29,7 @@ func NewThreadHandler(router *router.Router, threadUsecase thread.Usecase,
 	}
 
 	router.POST("/api/forum/{slug}/create",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(threadHandler.CreateThread)))
+		middlware.ContentTypeJson(threadHandler.CreateThread))
 	router.GET("/api/forum/{slug}/threads", middlware.ContentTypeJson(threadHandler.GetThreads))
 	router.GET("/api/thread/{slug_or_id}/details", middlware.ContentTypeJson(threadHandler.GetThread))
 	router.POST("/api/thread/{slug_or_id}/details", middlware.ContentTypeJson(threadHandler.UpdateThread))

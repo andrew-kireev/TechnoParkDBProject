@@ -24,15 +24,15 @@ func NewUserHandler(router *router.Router, userUsecase user.Usecase) *UserHandle
 	}
 
 	userHandler.router.POST("/api/user/{nickname}/create",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.CreateUserHandler)))
+		middlware.ContentTypeJson(userHandler.CreateUserHandler))
 	userHandler.router.GET("/api/user/{nickname}/profile",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.GetUserHandler)))
+		middlware.ContentTypeJson(userHandler.GetUserHandler))
 	userHandler.router.POST("/api/user/{nickname}/profile",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.UpdateUserHandler)))
+		middlware.ContentTypeJson(userHandler.UpdateUserHandler))
 	userHandler.router.POST("/api/service/clear",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.DeleteAllHandler)))
+		middlware.ContentTypeJson(userHandler.DeleteAllHandler))
 	userHandler.router.GET("/api/service/status",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(userHandler.GetStatus)))
+		middlware.ContentTypeJson(userHandler.GetStatus))
 	return userHandler
 }
 

@@ -26,7 +26,7 @@ func NewPostsHandler(router *router.Router, usecase posts.Usecase) *PostsHandler
 	}
 
 	postsHandler.router.POST("/api/thread/{slug}/create",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(postsHandler.CreatePost)))
+		middlware.ContentTypeJson(postsHandler.CreatePost))
 	postsHandler.router.GET("/api/thread/{slug_or_id}/posts", middlware.ContentTypeJson(postsHandler.GetPosts))
 	postsHandler.router.GET("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.GetPostHandler))
 	postsHandler.router.POST("/api/post/{id}/details", middlware.ContentTypeJson(postsHandler.UpdatePost))

@@ -27,11 +27,11 @@ func NewForumHandler(router *router.Router, forumUsecase forum.Usecase, userUsec
 	}
 
 	forumHandler.router.POST("/api/forum/create",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.CreateForumHandler)))
+		middlware.ContentTypeJson(forumHandler.CreateForumHandler))
 	forumHandler.router.GET("/api/forum/{forum_slug}/details",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.GetForumHandler)))
+		middlware.ContentTypeJson(forumHandler.GetForumHandler))
 	forumHandler.router.GET("/api/forum/{forum_slug}/users",
-		middlware.LoggingMiddleware(middlware.ContentTypeJson(forumHandler.GetUsersByForumHandler)))
+		middlware.ContentTypeJson(forumHandler.GetUsersByForumHandler))
 
 	return forumHandler
 }
