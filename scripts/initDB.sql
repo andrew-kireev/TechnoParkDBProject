@@ -186,8 +186,8 @@ create index if not exists thread_user on threads using hash (author);
 create index if not exists thread_full on threads (slug, id, forum);
 
 create index if not exists post_pathparent on posts ((path[1]));
-create index if not exists posts_forum on posts using hash (forum);
-create index if not exists posts_author on posts using hash (author);
+-- create index if not exists posts_forum on posts using hash (forum);
+-- create index if not exists posts_author on posts using hash (author);
 create index if not exists posts_thread_thread_id on posts (thread, id);
 CREATE INDEX IF NOT EXISTS post_path_id on posts (id, (path[1]));
 create index if not exists post_parent on posts (thread, id, (path[1]), parent);
@@ -197,8 +197,8 @@ create index if not exists post_gin on posts using gin (path);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
-create index if not exists users_email_hash on users using hash (email);
-create index if not exists users_full on users(nickname, fullname, about, email);
+-- create index if not exists users_email_hash on users using hash (email);
+-- create index if not exists users_full on users(nickname, fullname, about, email);
 
 create index if not exists votes on votes (nickname, thread_id, voice);
 
