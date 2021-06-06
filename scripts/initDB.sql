@@ -190,10 +190,11 @@ CREATE INDEX IF NOT EXISTS post_path_id on posts (id, (path[1]));
 create index if not exists post_parent on posts (thread, id, (path[1]), parent);
 create index if not exists posts_sorting on posts using gin ((path[1]) desc, path, id);
 create index if not exists post_thread on posts (thread);
-create index if not exists post_gin on posts(path);
+create index if not exists post_gin on posts using gin (path);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
+create index if not exists users_full on users  (nickname, fullname, about, email);
 
 create unique index if not exists votes on votes (nickname, thread_id, voice);
 
