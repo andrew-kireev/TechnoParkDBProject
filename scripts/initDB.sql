@@ -196,7 +196,7 @@ create index if not exists posts_thread_path_id on posts (thread, path, id);
 create index if not exists users_nickname_hash on users using hash (nickname);
 create index if not exists users_full on users  (nickname, fullname, about, email);
 
-create unique index if not exists votes on votes (nickname, thread_id, voice);
+create unique index if not exists votes on votes (nickname, thread_id);
 
 create index if not exists forum_slug on forum using hash (slug);
 create index if not exists forum_full on forum (title, user_nickname, slug, posts, threads);
