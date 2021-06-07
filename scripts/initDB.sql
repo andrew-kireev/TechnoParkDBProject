@@ -183,12 +183,10 @@ create index if not exists thread_slug_hash on threads using hash (slug);
 create index if not exists thread_forum_created on threads (forum, created);
 create index if not exists thread_user on threads using hash (author);
 create index if not exists thread_full on threads (slug, id, forum);
-create index if not exists thread_all on threads (title, author, forum, message, votes, slug, created);
 
-create index if not exists post_pathparent on posts ((path[1]));
+
 create index if not exists posts_thread_thread_id on posts (thread, id);
-CREATE INDEX IF NOT EXISTS post_path_id on posts (id, (path[1]));
-create index if not exists post_parent on posts (thread, id, (path[1]), parent);
+create index if not exists post_path_id on posts (id, (path[1]));
 create index if not exists posts_sorting on posts using gin ((path[1]) desc, path, id);
 create index if not exists post_thread on posts (thread);
 create index if not exists post_gin on posts using gin (path);
