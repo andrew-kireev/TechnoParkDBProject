@@ -181,20 +181,16 @@ EXECUTE PROCEDURE path();
 
 create index if not exists thread_slug_hash on threads using hash (slug);
 create index if not exists thread_forum_created on threads (created);
-create index if not exists thread_user_forum on threads using hash (forum);
 create index if not exists thread_forum_created on threads (forum, created);
 create index if not exists thread_user on threads using hash (author);
-create index if not exists threads_full on threads (title, author, forum, message, votes, slug, created);
---
-create index if not exists post_thread_parent on posts (thread, parent);
-create index if not exists post_path_id on posts ((path[1]), id);
+
+-
 create index if not exists post_pathparent on posts ((path[1]));
 create index if not exists posts_thread_thread_id on posts (thread, id);
--- create index if not exists post_path_id on posts (id, (path[1]));
+create index if not exists post_path_id on posts (id, (path[1]));
 create index if not exists post_parent on posts (thread, id, (path[1]), parent);
-create index if not exists posts_sorting on posts using gin ((path[1]) desc, path, id);
+create index if not exists posts_sorting on posts ((path[1]) desc, path, id);
 create index if not exists post_thread on posts (thread);
-create index if not exists post_gin on posts using gin (path);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
 --
 create index if not exists users_nickname_hash on users using hash (nickname);
