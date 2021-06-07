@@ -182,7 +182,7 @@ EXECUTE PROCEDURE path();
 create index if not exists thread_slug_hash on threads using hash (slug);
 create index if not exists thread_forum_created on threads (forum, created);
 create index if not exists thread_user on threads using hash (author);
-create index if not exists thread_full on threads (slug, id, forum);
+create index if not exists threads_full on threads (title, author, forum, message, votes, slug, created);
 
 create index if not exists post_pathparent on posts ((path[1]));
 create index if not exists posts_thread_thread_id on posts (thread, id);
@@ -196,10 +196,10 @@ create index if not exists posts_thread_path_id on posts (thread, path, id);
 create index if not exists users_nickname_hash on users using hash (nickname);
 create index if not exists users_full on users  (nickname, fullname, about, email);
 
-create unique index if not exists votes on votes (nickname, thread_id);
+create unique index if not exists votes on votes (nickname, thread_id, voice);
 
 create index if not exists forum_slug on forum using hash (slug);
+
 create index if not exists forum_user on forum using hash (user_nickname);
 create index if not exists f_u_nickname on users_to_forums using hash (nickname);
-create index if not exists users_to_forums_forum_nickname on users_to_forums (forum, nickname);
 create index if not exists users_to_forums_forum on users_to_forums (forum);
