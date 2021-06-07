@@ -193,6 +193,7 @@ create index if not exists posts_sorting on posts using gin ((path[1]) desc, pat
 create index if not exists post_thread on posts (thread);
 create index if not exists post_gin on posts using gin (path);
 create index if not exists posts_thread_path_id on posts (thread, path, id);
+create index if not exists posts_full on posts (parent, author, message, is_edited, forum, thread, created, path);
 
 create index if not exists users_nickname_hash on users using hash (nickname);
 
